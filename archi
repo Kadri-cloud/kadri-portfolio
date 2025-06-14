@@ -1,0 +1,94 @@
+kadri-portfolio/
+├── .env.local                  # Local environment variables (API keys, etc. NOT committed to Git)
+├── .eslintrc.json              # ESLint configuration for code linting
+├── .gitignore                  # Specifies intentionally untracked files that Git should ignore
+├── next.config.mjs             # Next.js configuration file
+├── package.json                # Lists project dependencies and scripts (npm, yarn, or pnpm)
+├── package-lock.json           # (or yarn.lock, pnpm-lock.yaml) Records exact dependency versions
+├── postcss.config.js           # PostCSS configuration (used by Tailwind CSS)
+├── README.md                   # Project description, setup instructions, etc.
+├── tailwind.config.ts          # Tailwind CSS configuration (customizations, shadcn/ui theme vars)
+├── tsconfig.json               # TypeScript compiler configuration
+
+├── public/                     # Static assets accessible directly via URL
+│   ├── images/
+│   │   └── profile.jpg         # Your profile picture (used in landing page/avatar)
+│   ├── cv.pdf                  # Your downloadable CV
+│   └── (other static assets like favicons provided by Next.js or shadcn)
+
+└── src/                        # Main source code for your application
+    ├── app/                    # Next.js App Router directory
+    │   ├── (main)/             # Route Group for main site pages (doesn't affect URL)
+    │   │   ├── layout.tsx      # Layout for the (main) group (Navbar, Footer wrapper)
+    │   │   │                   # - Imports: Navbar, Footer components
+    │   │   │                   # - Renders: Navbar, children (page content), Footer
+    │   │   │
+    │   │   ├── page.tsx        # Homepage (Your "futuristic dashboard" landing page)
+    │   │   │                   # - Imports: shadcn/ui components (Button, Card, Avatar etc.), Framer Motion
+    │   │   │                   # - Displays: Your intro, key skills/links with advanced UI
+    │   │   │
+    │   │   ├── expertise/
+    │   │   │   └── page.tsx    # CV/Expertise "Dashboard" page
+    │   │   │                   # - Imports: shadcn/ui (Card, CardHeader, CardContent), SkillBadge, ExperienceItem, data from lib/data.ts
+    │   │   │                   # - Displays: Skills, Work Experience, Education in a dashboard-like card layout
+    │   │   │
+    │   │   ├── projects/       # (Future) Directory for projects section
+    │   │   │   ├── page.tsx    # (Future) Projects listing page
+    │   │   │   └── [slug]/     # (Future) Optional: For individual project detail pages
+    │   │   │       └── page.tsx
+    │   │   │
+    │   │   ├── loading.tsx     # (Optional, as created by PowerShell script) Global loading UI for (main) routes
+    │   │   └── error.tsx       # (Optional, as created by PowerShell script) Global error UI for (main) routes
+    │   │
+    │   ├── api/                # Server-side API routes
+    │   │   └── chat/
+    │   │       └── route.ts    # (Future) API endpoint for your chatbot logic
+    │   │
+    │   ├── globals.css         # Global styles, including Tailwind CSS directives and shadcn/ui CSS variables
+    │   ├── layout.tsx          # Root Layout for the entire application (html, body tags)
+    │   │                       # - Imports: ThemeProvider, Inter font, cn utility
+    │   │                       # - Applies: Global font, background, ThemeProvider for dark/light mode
+    │   └── favicon.ico         # Default favicon (can be replaced)
+    │
+    ├── components/             # Reusable React components
+    │   ├── expertise/          # Components specific to the Expertise page
+    │   │   ├── ExperienceItem.tsx # Displays a single work/education experience entry
+    │   │   │                      # - Imports: Framer Motion, lucide-react icons, (uses props from data.ts)
+    │   │   ├── SkillBadge.tsx     # Displays a single skill
+    │   │   │                      # - Imports: Framer Motion, (uses props from data.ts including IconComponent)
+    │   │
+    │   ├── layout/             # Layout specific components
+    │   │   ├── Footer.tsx      # Site footer
+    │   │   │                   # - Imports: shadcn/ui Separator, Link (Next.js)
+    │   │   ├── Navbar.tsx      # Site navigation bar
+    │   │   │                   # - Imports: shadcn/ui (NavigationMenu, Sheet, Button), Link, usePathname, lucide-react icons
+    │   │   └── ChatbotTrigger.tsx # (Future, as created by PowerShell script) Button to open chatbot
+    │   │
+    │   ├── chatbot/            # (Future, as created by PowerShell script) Chatbot UI components
+    │   │   ├── ChatInput.tsx
+    │   │   ├── ChatWindow.tsx
+    │   │   └── Message.tsx
+    │   │
+    │   ├── projects/           # (Future, as created by PowerShell script)
+    │   │   └── ProjectCard.tsx
+    │   │
+    │   ├── ui/                 # shadcn/ui components (automatically added by `npx shadcn-ui add ...`)
+    │   │   ├── avatar.tsx      # shadcn/ui Avatar component
+    │   │   ├── button.tsx      # shadcn/ui Button component
+    │   │   ├── card.tsx        # shadcn/ui Card components (Card, CardHeader, CardContent, etc.)
+    │   │   ├── navigation-menu.tsx # shadcn/ui Navigation Menu component
+    │   │   ├── separator.tsx   # shadcn/ui Separator component
+    │   │   ├── sheet.tsx       # shadcn/ui Sheet component (for mobile nav)
+    │   │   ├── tooltip.tsx     # shadcn/ui Tooltip component
+    │   │   └── ... (any other shadcn/ui components you add)
+    │   │
+    │   └── theme-provider.tsx  # Component to manage light/dark mode using next-themes
+    │                           # - Imports: next-themes
+    │
+    └── lib/                    # Utility functions, data, and other helper modules
+        ├── data.ts             # Static data for your portfolio (skills, experience, education, projects)
+        │                       # - Exports: Arrays/objects of data, interfaces for data types
+        │                       # - Imports: lucide-react (for IconComponent types and references)
+        ├── chatbotLogic.ts     # (Future, as created by PowerShell script) Core logic for chatbot
+        ├── utils.ts            # Utility functions, including `cn` from shadcn/ui for conditional class names
+        │                       # - Exports: cn function (and any other custom utils)
