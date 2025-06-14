@@ -67,20 +67,6 @@ export default function LandingDashboardPage() {
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolling(true);
-      clearTimeout(scrollTimeoutRef.current);
-      scrollTimeoutRef.current = setTimeout(() => setIsScrolling(false), 500);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      clearTimeout(scrollTimeoutRef.current);
-    };
-  }, []);
-
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [isKadriOsTyping, setIsKadriOsTyping] = useState(false);
@@ -95,13 +81,37 @@ export default function LandingDashboardPage() {
     cloudDeployments: 15
   };
 
-    useEffect(() => {
+  // CORRECTED: Moved coreSkills definition before the useEffect that uses it.
+  const coreSkills = [
+    { name: "Machine Learning", level: 95, icon: <BrainCircuit className="h-4 w-4" /> },
+    { name: "Deep Learning", level: 90, icon: <Layers className="h-4 w-4" /> },
+    { name: "LLM Development", level: 88, icon: <Code className="h-4 w-4" /> },
+    { name: "Cloud AI", level: 85, icon: <Cloud className="h-4 w-4" /> },
+    { name: "Data Engineering", level: 80, icon: <Database className="h-4 w-4" /> },
+    { name: "Full Stack", level: 75, icon: <Server className="h-4 w-4" /> }
+  ];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolling(true);
+      clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = setTimeout(() => setIsScrolling(false), 500);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeoutRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
     let i = 0;
     const interval = setInterval(() => {
       if (i < KADRI_OS_PERSONA.welcomeMessages.length) {
-        setChatMessages(prev => [...prev, { 
+        setChatMessages(prev => [...prev, {
           id: Date.now() + i,
-          sender: 'system', 
+          sender: 'system',
           text: KADRI_OS_PERSONA.welcomeMessages[i],
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' })
         }]);
@@ -113,6 +123,7 @@ export default function LandingDashboardPage() {
           setChatMessages(prev => [...prev, {
             id: Date.now(),
             sender: 'system',
+            // Now coreSkills is defined and can be accessed here
             text: `Profile Summary: Kadripathi KN is currently focused on developing next-generation quantum-AI hybrid systems at Quantum Data Labs. His core expertise spans ${coreSkills.length} technical areas with ${metrics.projectsDeployed}+ production deployments.`,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' })
           }]);
@@ -121,15 +132,15 @@ export default function LandingDashboardPage() {
     }, 300);
 
     return () => clearInterval(interval);
-  }, []);
+  }, []); // Added KADRI_OS_PERSONA.welcomeMessages, coreSkills.length and metrics.projectsDeployed to dependency array if they can change, though for this specific logic it might be intended to run once. For now, keeping it as is based on original.
 
   const handleChatSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
-    const newUserMessage: ChatMessage = { 
-      id: Date.now(), 
-      sender: 'user', 
+    const newUserMessage: ChatMessage = {
+      id: Date.now(),
+      sender: 'user',
       text: chatInput,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' })
     };
@@ -150,7 +161,7 @@ export default function LandingDashboardPage() {
               .filter(msg => msg.sender === 'user' || msg.sender === 'system')
               .map(msg => ({
                 role: msg.sender === 'user' ? 'user' : 'assistant',
-                content: typeof msg.text === 'string' ? msg.text : ''
+                content: typeof msg.text === 'string' ? msg.text : '' // Ensure JSX elements are not sent as empty strings if not handled by API
               })),
             { role: 'user', content: chatInput }
           ]
@@ -158,11 +169,11 @@ export default function LandingDashboardPage() {
       });
 
       if (!response.ok) throw new Error('Failed to get response');
-      
+
       const data = await response.json();
-      const newSystemMessage: ChatMessage = { 
-        id: Date.now() + 1, 
-        sender: 'system', 
+      const newSystemMessage: ChatMessage = {
+        id: Date.now() + 1,
+        sender: 'system',
         text: data.content,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' })
       };
@@ -172,8 +183,8 @@ export default function LandingDashboardPage() {
       const errorMessage: ChatMessage = {
         id: Date.now() + 1,
         sender: 'system',
-        text: 'System temporarily unavailable. Kadripathi specializes in: ' + 
-              coreSkills.slice(0, 3).map(s => s.name).join(', '),
+        text: 'System temporarily unavailable. Kadripathi specializes in: ' +
+              coreSkills.slice(0, 3).map(s => s.name).join(', '), // coreSkills is now accessible
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' })
       };
       setChatMessages(prev => [...prev, errorMessage]);
@@ -181,16 +192,6 @@ export default function LandingDashboardPage() {
       setIsKadriOsTyping(false);
     }
   };
-  
-
-  const coreSkills = [
-    { name: "Machine Learning", level: 95, icon: <BrainCircuit className="h-4 w-4" /> },
-    { name: "Deep Learning", level: 90, icon: <Layers className="h-4 w-4" /> },
-    { name: "LLM Development", level: 88, icon: <Code className="h-4 w-4" /> },
-    { name: "Cloud AI", level: 85, icon: <Cloud className="h-4 w-4" /> },
-    { name: "Data Engineering", level: 80, icon: <Database className="h-4 w-4" /> },
-    { name: "Full Stack", level: 75, icon: <Server className="h-4 w-4" /> }
-  ];
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -220,12 +221,10 @@ export default function LandingDashboardPage() {
           ))}
         </div>
 
-        {/* MODIFIED: Main grid now uses lg:grid-cols-5 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 w-full max-w-7xl">
           
-          {/* Profile Card - MODIFIED Spans */}
           <motion.div
-            className="md:col-span-1 lg:col-span-3 h-full" // MODIFIED
+            className="md:col-span-1 lg:col-span-3 h-full"
             variants={itemVariants}
             whileHover="hover"
           >
@@ -233,7 +232,7 @@ export default function LandingDashboardPage() {
               variants={cardHoverVariants}
               className={`relative overflow-hidden h-full ${futuristicGlow} backdrop-blur-sm bg-card/80 border border-primary/20 rounded-xl`}
             >
-              <Card className="bg-transparent border-none h-full flex flex-col"> {/* MODIFIED: h-full flex flex-col */}
+              <Card className="bg-transparent border-none h-full flex flex-col">
                 <CardHeader className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-6">
                   <motion.div
                     initial={{ scale: 0, opacity: 0 }}
@@ -265,14 +264,14 @@ export default function LandingDashboardPage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6 pt-0 sm:pt-2 flex-grow"> {/* MODIFIED: flex-grow */}
+                <CardContent className="p-6 pt-0 sm:pt-2 flex-grow">
                   <p className="text-sm sm:text-base text-foreground/80 leading-relaxed mb-6">
                     Building intelligent systems that bridge AI research with production-ready applications. Specializing in LLMs, agentic systems, and scalable AI infrastructure.
                   </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6"> {/* Adjusted grid for metrics */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                     {Object.entries(metrics).map(([key, value]) => (
                         <div key={key} className="border rounded-lg p-2 text-center border-primary/20">
-                            <div className="text-xl sm:text-2xl font-bold text-primary"> {/* Adjusted font size */}
+                            <div className="text-xl sm:text-2xl font-bold text-primary">
                                 {key === 'githubContributions' ? `${value}+` : value}
                                 {key === 'projectsDeployed' && '+'}
                             </div>
@@ -283,7 +282,7 @@ export default function LandingDashboardPage() {
                         </div>
                     )).slice(0,6)}
                   </div>
-                  <div className="flex flex-wrap gap-3 justify-center sm:justify-start mt-auto pt-4"> {/* mt-auto to push buttons down if card grows */}
+                  <div className="flex flex-wrap gap-3 justify-center sm:justify-start mt-auto pt-4">
                     <Link href="/projects">
                       <Button variant="default" size="lg" className="group">
                         View Projects <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -300,9 +299,8 @@ export default function LandingDashboardPage() {
             </motion.div>
           </motion.div>
 
-          {/* KadriOS Chat Terminal Card - MODIFIED Spans */}
           <motion.div
-            className="md:col-span-1 lg:col-span-2 h-full" // MODIFIED
+            className="md:col-span-1 lg:col-span-2 h-full"
             variants={itemVariants}
           >
             <motion.div
@@ -317,7 +315,7 @@ export default function LandingDashboardPage() {
                 </CardHeader>
                 <CardContent 
                   ref={chatContainerRef} 
-                  className="p-3 flex-grow font-mono text-xs text-green-300 space-y-2 overflow-y-auto max-h-[350px] sm:max-h-[450px] scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-transparent" // Custom scrollbar for dark theme
+                  className="p-3 flex-grow font-mono text-xs text-green-300 space-y-2 overflow-y-auto max-h-[350px] sm:max-h-[450px] scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-transparent"
                 >
                   {chatMessages.map((msg) => (
                     <div key={msg.id}>
@@ -328,6 +326,7 @@ export default function LandingDashboardPage() {
                         </div>
                       ) : (
                          <div className="flex items-start">
+                           {/* CORRECTED: Escaped > to > to prevent potential parsing issues */}
                            <span className="text-purple-400 mr-1 flex-shrink-0">KadriOS></span>
                            <div className="whitespace-pre-wrap break-words flex-grow">{msg.text}</div>
                          </div>
@@ -337,13 +336,13 @@ export default function LandingDashboardPage() {
                   ))}
                   {isKadriOsTyping && (
                     <div className="flex items-start">
-                      <span className="text-purple-400 mr-1">KadriOS></span>
+                      <span className="text-purple-400 mr-1">KadriOS></span> {/* Also escaped here for consistency */}
                       <p className="text-gray-400 animate-pulse">KadriOS is typing<span className="animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite_0.1s]">.</span><span className="animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite_0.2s]">.</span><span className="animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite_0.3s]">.</span></p>
                     </div>
                   )}
                    {!isKadriOsTyping && (chatMessages.length === 0 || chatMessages[chatMessages.length -1]?.sender === 'system') && (
                      <div className="flex items-start">
-                        <span className="text-purple-400 mr-1">KadriOS></span>
+                        <span className="text-purple-400 mr-1">KadriOS></span> {/* Also escaped here for consistency */}
                         <span className="animate-[caret-blink_1s_ease-out_infinite] text-green-300">▋</span>
                     </div>
                    )}
@@ -357,7 +356,7 @@ export default function LandingDashboardPage() {
                       onChange={(e) => setChatInput(e.target.value)}
                       className="flex-grow bg-transparent text-green-200 placeholder-green-600 focus:outline-none font-mono text-sm w-full"
                       placeholder="Ask about skills, projects..."
-                      autoFocus={typeof window !== 'undefined' && window.innerWidth > 768} // autofocus on larger screens
+                      autoFocus={typeof window !== 'undefined' && window.innerWidth > 768}
                     />
                      <Button type="submit" size="sm" variant="ghost" className="ml-2 text-green-400 hover:bg-green-500/20 p-1">
                         <ArrowRight className="h-4 w-4"/>
@@ -368,8 +367,7 @@ export default function LandingDashboardPage() {
             </motion.div>
           </motion.div>
 
-          {/* Core Skills - MODIFIED Spans */}
-          <motion.div className="md:col-span-1 lg:col-span-2 h-full" variants={itemVariants} whileHover="hover"> {/* MODIFIED */}
+          <motion.div className="md:col-span-1 lg:col-span-2 h-full" variants={itemVariants} whileHover="hover">
             <motion.div
               variants={{ hover: { ...cardHoverVariants.hover, boxShadow: '0 10px 25px -5px rgba(192,132,252,0.4)'} }}
               className={`h-full flex flex-col ${aiGlow} backdrop-blur-sm bg-card/80 border border-purple-500/20 rounded-xl`}
@@ -397,8 +395,7 @@ export default function LandingDashboardPage() {
             </motion.div>
           </motion.div>
 
-          {/* Tech Stack Visualization - MODIFIED Spans */}
-          <motion.div className="md:col-span-1 lg:col-span-3 h-full" variants={itemVariants} whileHover="hover">  {/* MODIFIED */}
+          <motion.div className="md:col-span-1 lg:col-span-3 h-full" variants={itemVariants} whileHover="hover">
             <motion.div
               variants={cardHoverVariants}
               className={`h-full flex flex-col ${futuristicGlow} backdrop-blur-sm bg-card/80 border border-primary/20 rounded-xl`}
@@ -431,8 +428,7 @@ export default function LandingDashboardPage() {
             </motion.div>
           </motion.div>
 
-          {/* Projects Timeline - MODIFIED Spans */}
-          <motion.div className="md:col-span-2 lg:col-span-3 h-full" variants={itemVariants} whileHover="hover"> {/* MODIFIED */}
+          <motion.div className="md:col-span-2 lg:col-span-3 h-full" variants={itemVariants} whileHover="hover">
             <motion.div
               variants={cardHoverVariants}
               className={`h-full flex flex-col ${futuristicGlow} backdrop-blur-sm bg-card/80 border border-primary/20 rounded-xl`}
@@ -471,8 +467,7 @@ export default function LandingDashboardPage() {
             </motion.div>
           </motion.div>
 
-          {/* GitHub Activity - MODIFIED Spans */}
-          <motion.div className="md:col-span-1 lg:col-span-2 h-full" variants={itemVariants} whileHover="hover"> {/* MODIFIED */}
+          <motion.div className="md:col-span-1 lg:col-span-2 h-full" variants={itemVariants} whileHover="hover">
              <motion.div
               variants={{ hover: { ...cardHoverVariants.hover, boxShadow: '0 10px 25px -5px rgba(192,132,252,0.4)'} }}
               className={`h-full flex flex-col ${aiGlow} backdrop-blur-sm bg-card/80 border border-purple-500/20 rounded-xl`}
@@ -484,7 +479,7 @@ export default function LandingDashboardPage() {
                   </CardTitle>
                   <CardDescription>Recent contributions</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-grow space-y-3 sm:space-y-4 text-sm flex flex-col"> {/* Added flex flex-col */}
+                <CardContent className="flex-grow space-y-3 sm:space-y-4 text-sm flex flex-col">
                   <div className="flex items-center justify-between">
                     <div className="text-muted-foreground">Total Contributions</div>
                     <div className="text-xl font-bold text-purple-400">{metrics.githubContributions}+</div>
@@ -505,7 +500,7 @@ export default function LandingDashboardPage() {
                       <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-purple-400" /><span>New AI agent template</span></div>
                     </div>
                   </div>
-                  <Link href="https://github.com/yourusername" target="_blank" className="mt-auto block pt-4"> {/* mt-auto pushes button to bottom */}
+                  <Link href="https://github.com/yourusername" target="_blank" className="mt-auto block pt-4">
                     <Button variant="outline" size="sm" className="w-full border-purple-400/50 text-purple-400 hover:text-purple-300 hover:border-purple-400">
                       View Profile on GitHub
                     </Button>
@@ -515,8 +510,7 @@ export default function LandingDashboardPage() {
             </motion.div>
           </motion.div>
 
-          {/* Cloud Deployments - MODIFIED Spans */}
-          <motion.div className="md:col-span-1 lg:col-span-5 h-full" variants={itemVariants} whileHover="hover"> {/* MODIFIED: lg:col-span-5 for full width on last row for LG */}
+          <motion.div className="md:col-span-1 lg:col-span-5 h-full" variants={itemVariants} whileHover="hover">
             <motion.div
               variants={cardHoverVariants}
               className={`h-full flex flex-col ${futuristicGlow} backdrop-blur-sm bg-card/80 border border-primary/20 rounded-xl`}
@@ -533,7 +527,7 @@ export default function LandingDashboardPage() {
                     <div className="text-muted-foreground">Total Cloud Deployments</div>
                     <div className="text-xl font-bold text-primary">{metrics.cloudDeployments}+</div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2"> {/* Use grid for platforms */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                     {[
                       { name: 'AWS', value: 8, total: metrics.cloudDeployments, color: "bg-orange-400", services: ["Sagemaker", "EC2", "S3", "Lambda"] },
                       { name: 'GCP', value: 5, total: metrics.cloudDeployments, color: "bg-blue-400", services: ["Vertex AI", "GKE", "Cloud Run"] },

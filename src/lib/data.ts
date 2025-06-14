@@ -1,5 +1,5 @@
 // src/lib/data.ts
-import { LucideIcon, Brain,  Cpu, GraduationCap, Briefcase, DraftingCompass,  Lightbulb, UserCheck, Zap } from 'lucide-react';
+import { LucideIcon, Brain,  Cpu, GraduationCap, DraftingCompass,  Lightbulb, UserCheck, Zap } from 'lucide-react';
 
 export interface Skill {
   name: string;
@@ -145,7 +145,7 @@ export const avionicSystems: AvionicSystem[] = [
 
 
 // src/lib/data.ts
-import { BrainCircuit, Code, Server, Rocket, GitBranch, Database } from 'lucide-react';
+import { Code, Rocket} from 'lucide-react';
 
 export const projects = [
   {

@@ -2,7 +2,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { Briefcase, MapPin, CalendarDays, ArrowRight } from 'lucide-react';
+import { MapPin, CalendarDays, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ExperienceItemProps {

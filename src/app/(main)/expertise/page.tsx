@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { motion, Variants, AnimatePresence } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { Brain, Briefcase, Rocket, Cpu, Network, Code, Database, Zap, ArrowRight, GitBranch, Cloud, Shield, Layers, Binary, GraduationCap } from 'lucide-react';
+import { Brain, Briefcase, Rocket, Cpu, Code,  Zap, ArrowRight,  Cloud, Layers, Binary, GraduationCap } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';

@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Separator } from "@/components/ui/separator"; // shadcn separator
+
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();

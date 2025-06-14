@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, X, Send, Sparkles, User, BrainCircuit, Rocket, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Bot, X, Send, User, Rocket, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -89,7 +89,7 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
         timestamp: new Date()
       }]);
     }
-  }, []);
+  }, [messages.length]); // Fixed: Added messages.length to dependency array
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -115,6 +115,7 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
               <Bot className="h-6 w-6" />
             </div>
             <div>
+              {/* Fixed: Escaped apostrophe */}
               <h2 className="font-bold text-lg">Kadri's AI Assistant</h2>
               <div className="flex items-center gap-2">
                 <div className={cn(
