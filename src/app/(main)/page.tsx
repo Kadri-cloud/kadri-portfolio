@@ -243,7 +243,7 @@ export default function LandingDashboardPage() {
                         Explore Expertise <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </Link>
-                    <Link href="/cv.pdf" target="_blank" rel="noopener noreferrer">
+                    <Link href="/kadri-ai-ml-cv.pdf" target="_blank" rel="noopener noreferrer">
                       <Button variant="outline" size="lg" className="border-primary/50">
                         <Download className="mr-2 h-5 w-5" /> Download CV
                       </Button>

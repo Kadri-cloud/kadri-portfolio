@@ -16,11 +16,11 @@ Research Thesis:
 •	Embedded trust and transparency by integrating Explainable AI (XAI) into the diagnostic pipeline, ensuring clarity in fault detection and bolstering safety standards for critical aviation systems.
 •	Published research detailing the "Talking Machine" architecture, its underlying AI models, and performance results in the AIAA SciTech Forum Proceedings.
 BTech Aerospace Engineering, Jain University, India	Aug 2017 – July 2021
-Final year project: Succeeded in the development of a 3D-printed Electro Hydrodynamic Thruster (EHT) for space application, pioneering the design, fabrication, and testing, with a high voltage corona discharge source and micro thrust measuring system. Demonstrated at the Young Scientists' conference during India International Science Festival, securing the second position among the delegates from 32 nations.
+Final year project: Succeeded in the development of a 3D-printed Electro Hydrodynamic Thruster (EHT) for space application, pioneering the design, fabrication, and testing, with a high voltage corona discharge source and micro thrust measuring system. Demonstrated at the Young Scientists' conference during India International Science Festival, securing the second position among the delegates from 32 nations, ragav was also involved.
 CAREER HISTORY
 Quantum Data Labs Limited (QDL), Milton Keynes, United-Kingdom
 Applied AI Engineer – NLP and GenAI	Nov 2024 – Present
-A pioneering AI start-up developing self-optimizing industrial ecosystems by integrating predictive insight with autonomous action.
+A pioneering AI start-up developing self-optimizing industrial ecosystems by integrating predictive insight with autonomous action - Ashwin venkatesan is involved (co founder).
 •	Architected and led the development of the company’s core multi-agent AI orchestration framework, a foundational system that enabled the rapid delivery of the flagship MVP (PredictIQ & ProcureIQ) in under 3 months.
 •	Engineered and deployed a suite of sophisticated, specialized agentic AI workflows to automate and optimize the end-to-end industrial procurement lifecycle, resulting in a 60% increase in operational efficiency and an 80% reduction in human errors for pilot customers. Key agents include:
 •	Market Analyser: Automated web data extraction and analysis to generate real-time cost estimations for OEM parts, ensuring accurate project budget forecasting.
@@ -70,5 +70,5 @@ Cloud Platforms: AWS - Sagemaker, EC2, S3, Lambda, experienced in managing Virtu
 SKILLS, INTERESTS & EXTRACURRICULAR ACTIVITIES
 •	Languages: Fluent in English (IELTS: 8) and native Kannada speaker
 •	Individual Interests: Hobbyist Electronics (Replicating Nicolas Tesla’s inventions), reading personal development books, walking, fitness, and cooking
-•	Volunteering: Maaruthsakha Aerospace Labs - NGO providing solutions for societal problems. Played a significant role in disinfecting hospital surfaces using UVc sterilizers and UAV disinfectant spray during the COVID-19 pandemic outbreak
+•	Volunteering: Yethinder Ragav is a founder- Maaruthsakha Aerospace Labs - NGO providing solutions for societal problems. Played a significant role in disinfecting hospital surfaces using UVc sterilizers and UAV disinfectant spray during the COVID-19 pandemic outbreak
 •	Memberships: The Royal Aeronautical Society, London

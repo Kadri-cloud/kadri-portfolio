@@ -43,18 +43,26 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-border/20 bg-background/80 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/60 overflow-x-hidden">
+      {/* FIX 1: Removed `overflow-x-hidden` from header to prevent internal scrollbar on desktop */}
+      <header className="sticky top-0 z-40 w-full border-b border-border/20 bg-background/80 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/60">
         <div className="absolute inset-0 opacity-5 pointer-events-none">
           <div className="h-full w-full bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:24px_24px]" />
         </div>
-        <div className="absolute inset-0 opacity-10 pointer-events-none mix-blend-soft-light">
-          <div className="absolute -left-20 -top-20 w-64 h-64 bg-primary rounded-full filter blur-3xl animate-[pulse_8s_ease-in-out_infinite]" />
-          <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-secondary rounded-full filter blur-3xl animate-[pulse_12s_ease-in-out_infinite_2s]" />
+        
+        {/* FIX 1: This new div acts as a clipping mask for the blobs, preventing page scroll without affecting the header layout. */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute inset-0 opacity-10 pointer-events-none mix-blend-soft-light">
+                <div className="absolute -left-20 -top-20 w-64 h-64 bg-primary rounded-full filter blur-3xl animate-[pulse_8s_ease-in-out_infinite]" />
+                <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-secondary rounded-full filter blur-3xl animate-[pulse_12s_ease-in-out_infinite_2s]" />
+            </div>
         </div>
-        <div className="container flex h-20 max-w-screen-2xl items-center relative px-4 sm:px-6">
+        
+        {/* FIX 2: Added `justify-center md:justify-start` to center logo on mobile and keep it left on desktop */}
+        <div className="container flex h-20 max-w-screen-2xl items-center justify-center md:justify-start relative px-4 sm:px-6">
           <Link
             href="/"
-            className="mr-4 md:mr-6 flex items-center space-x-2 group relative z-10"
+            // FIX 2: Changed margin to only apply on desktop to not affect mobile centering
+            className="md:mr-6 flex items-center space-x-2 group relative z-10"
             onMouseEnter={() => setHoveredItem("logo")}
             onMouseLeave={() => setHoveredItem(null)}
           >
@@ -66,6 +74,7 @@ export default function Navbar() {
             </span>
           </Link>
 
+          {/* Desktop Navigation */}
           <NavigationMenu className="hidden md:flex flex-grow justify-center z-10">
             <NavigationMenuList className="space-x-2">
               {mainNavItems.map((item) => {
@@ -88,9 +97,6 @@ export default function Navbar() {
                     onMouseLeave={() => setHoveredItem(null)}
                   >
                     {item.href ? (
-                      // --- FINAL FIX: Using the modern `asChild` pattern ---
-                      // NavigationMenuLink wraps the Link and has the `asChild` prop.
-                      // The styles that were on NavigationMenuLink are now on the <Link> component itself.
                       <NavigationMenuLink asChild>
                         <Link
                           href={item.href}
@@ -100,7 +106,6 @@ export default function Navbar() {
                         </Link>
                       </NavigationMenuLink>
                     ) : (
-                      // The button remains unchanged and is correct.
                       <button onClick={item.onClick} className={cn(navigationMenuTriggerStyle(), "relative flex flex-col items-center justify-center h-full w-24 rounded-lg transition-colors hover:bg-accent/50 bg-transparent")}>
                         {navItemContent}
                       </button>
@@ -113,7 +118,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Mobile navigation is already correct and does not need changes */}
+      {/* Mobile Bottom Navigation */}
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: 0 }}

@@ -9,6 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+// FIX: Importing from our new centralized persona file
+import { KADRI_OS_PERSONA } from '@/lib/persona';
 
 interface Message {
   id: string;
@@ -33,10 +35,6 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
       role: 'user',
       timestamp: new Date()
     };
-
-    // THE FIX: Check if this is the first real user message
-    // The initial message history only contains the welcome message from the assistant.
-    const isFirstMessage = messages.length === 1 && messages[0].role === 'assistant';
     
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
@@ -49,12 +47,8 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          // We send the full history so the server can decide what to do
-          messages: newMessages, 
-          // And we send the signal
-          isFirstMessage: isFirstMessage 
-        })
+        // We just send the messages; the server now figures out if it's the first message.
+        body: JSON.stringify({ messages: newMessages })
       });
 
       if (!response.ok) throw new Error('Failed to get response from the server.');
@@ -71,7 +65,7 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
       console.error('Chat error:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: 'Sorry, I encountered an error connecting to my core systems. Please try again later.',
+        content: KADRI_OS_PERSONA.defaultResponse,
         role: 'assistant',
         timestamp: new Date()
       };
@@ -82,10 +76,11 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
   };
 
   useEffect(() => {
+    // Set the initial welcome message from our persona file.
     if (messages.length === 0) {
       setMessages([{
         id: 'welcome',
-        content: `**Hello!** I'm Kadri's AI assistant. I've just reviewed his CV and personal notes to assist you better. How can I help?`,
+        content: KADRI_OS_PERSONA.welcomeMessage,
         role: 'assistant',
         timestamp: new Date()
       }]);
@@ -114,10 +109,10 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-primary/10 text-primary"><Bot className="h-6 w-6" /></div>
             <div>
-              <h2 className="font-bold text-lg">Kadri's AI Assistant</h2>
+              <h2 className="font-bold text-lg">KadriOS Digital Replica</h2>
               <div className="flex items-center gap-2">
                 <div className={cn("h-2 w-2 rounded-full", isLoading ? "bg-yellow-400 animate-pulse" : "bg-green-400")} />
-                <span className="text-xs text-muted-foreground">{isLoading ? "Thinking..." : "Online"}</span>
+                <span className="text-xs text-muted-foreground">{isLoading ? "Processing..." : "Online"}</span>
               </div>
             </div>
           </div>
@@ -146,8 +141,8 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
             <Button type="submit" size="icon" className="absolute right-2 bottom-2 h-8 w-8" disabled={!input.trim() || isLoading}>{isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</Button>
           </div>
           <div className="flex justify-between items-center mt-2">
-            <span className="text-xs text-muted-foreground">Powered by Kadri.KN OS</span>
-            <div className="flex items-center gap-1 text-xs text-primary"><Rocket className="h-3 w-3" /><span>Context-Aware Preview</span></div>
+            <span className="text-xs text-muted-foreground">Powered by KadriOS</span>
+            <div className="flex items-center gap-1 text-xs text-primary"><Rocket className="h-3 w-3" /><span>Digital Replica v1.0</span></div>
           </div>
         </form>
       </motion.div>

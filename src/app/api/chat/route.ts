@@ -1,16 +1,21 @@
 // src/app/api/chat/route.ts
 import { NextResponse } from 'next/server';
+// FIX: Importing from our new centralized persona file
 import { KADRI_OS_PERSONA } from '@/lib/persona';
 import path from 'path';
 import fs from 'fs/promises';
 
-// This function now only runs when absolutely necessary
 async function getKnowledgeBase(): Promise<string> {
   try {
     const memoryFilePath = path.join(process.cwd(), 'public', 'kadri-memory.txt');
     const cvFilePath = path.join(process.cwd(), 'public', 'cv-data.txt');
-    const memoryText = await fs.readFile(memoryFilePath, 'utf-8');
-    const cvText = await fs.readFile(cvFilePath, 'utf-8');
+    
+    // Using Promise.all for slightly more efficient file reading
+    const [memoryText, cvText] = await Promise.all([
+      fs.readFile(memoryFilePath, 'utf-8'),
+      fs.readFile(cvFilePath, 'utf-8')
+    ]);
+
     return `
       --- KADRI'S CV START ---
       ${cvText}
@@ -21,40 +26,42 @@ async function getKnowledgeBase(): Promise<string> {
     `;
   } catch (error) {
     console.error("Error reading knowledge base files:", error);
-    return "Could not load background information.";
+    return "Could not load background information. Inform the user that there's a temporary issue accessing your detailed memory.";
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const { messages, isFirstMessage } = await req.json();
+    const { messages } = await req.json();
 
+    // The user's first message will be the second message in the history (after the welcome message)
+    const isFirstUserMessage = messages.length === 2;
+    
     let systemPrompt: string;
-    let messagesForApi: any[];
+    
+    // The main prompt is now cleaner, pulling from our persona file.
+    let baseSystemPrompt = KADRI_OS_PERSONA.systemPrompt;
 
-    // THE FIX: Check if it's the first message to decide the prompt strategy
-    if (isFirstMessage) {
-      console.log("First message received. Building full context prompt.");
+    // We inject the full knowledge base only when it's the user's first query to save on tokens for subsequent turns.
+    if (isFirstUserMessage) {
+      console.log("First user message received. Building full context prompt.");
       const knowledge = await getKnowledgeBase();
       systemPrompt = `
-        ${KADRI_OS_PERSONA.systemPrompt}
-        You have the following internal knowledge about Kadripathi KN. This is your primary source of truth.
+        ${baseSystemPrompt}
+        
+        **Your Knowledge Base (Primary Source of Truth):**
         ${knowledge}
-        Now, answer the user's query based on this knowledge and the conversation history.
       `;
-      // For the first message, we send the welcome message and the user's first query.
-      messagesForApi = messages; 
     } else {
       console.log("Subsequent message received. Using short-term memory prompt.");
-      systemPrompt = KADRI_OS_PERSONA.systemPrompt;
-      // SLIDING WINDOW: Send only the last 8 messages (4 user, 4 assistant) to save tokens.
-      // This provides short-term memory.
-      messagesForApi = messages.slice(-8); 
+      systemPrompt = baseSystemPrompt;
     }
 
+    // The API payload now contains the system prompt and the recent conversation history.
+    // A sliding window of the last 10 messages provides good context without being too expensive.
     const payload = [
       { role: 'system', content: systemPrompt },
-      ...messagesForApi
+      ...messages.slice(-10) 
     ];
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -66,7 +73,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         "model": "meta-llama/llama-3-8b-instruct", 
         "messages": payload,
-        "temperature": 0.6,
+        "temperature": 0.7, // Slightly increased for more natural, less robotic responses
         "max_tokens": 2048
       })
     });
@@ -85,7 +92,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Chat API error:', error);
     return NextResponse.json(
-      { error: 'Error processing your request' },
+      { error: KADRI_OS_PERSONA.defaultResponse },
       { status: 500 }
     );
   }
