@@ -1,19 +1,18 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
-import { Inter as FontSans } from "next/font/google"; // Recommended by shadcn
+import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils"; // shadcn utility
-import { ThemeProvider } from "@/components/theme-provider"; // Our ThemeProvider
+import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const fontSans = FontSans({
   subsets: ["latin"],
-  variable: "--font-sans", // For shadcn
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
   title: "Kadripathi KN - AI & Aerospace Portfolio",
   description: "Futuristic portfolio of Kadripathi KN, Machine Learning Engineer.",
-  // Add more meta tags for SEO and futuristic feel later
 };
 
 export default function RootLayout({
@@ -22,16 +21,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning> {/* suppressHydrationWarning for next-themes */}
+    // This prop is essential. It tells React to ignore the className
+    // mismatch on the body tag that next-themes will cause.
+    <html lang="en" suppressHydrationWarning>
+      <head />
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased dark", // Enforce dark theme by default
+          "min-h-screen bg-background font-sans antialiased dark",
           fontSans.variable
         )}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark" // Default to dark theme
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >

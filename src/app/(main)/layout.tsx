@@ -11,11 +11,10 @@ export default function MainLayout({
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
       <Navbar />
-      <main className="flex-1"> {/* No more pt needed as navbar is part of flow or handles its own spacing */}
+      <main className="flex-1">
         {children}
       </main>
       <Footer />
-      {/* ChatbotTrigger will go here, potentially fixed */}
     </div>
   );
 }

@@ -1,110 +1,81 @@
 // src/components/expertise/ExperienceItem.tsx
-'use client';
-import { motion } from 'framer-motion';
+'use client'; 
+
 import React from 'react';
-import { MapPin, CalendarDays, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface ExperienceItemProps {
   role: string;
-  company: string;
+  company?: string;
+  institution?: string; // Add institution as an alternative
   duration: string;
   location: string;
   descriptionPoints: string[];
-  companyLink?: string;
   isFirst?: boolean;
   isLast?: boolean;
+  isSelected: boolean;
+  onClick: () => void;
 }
-
-const itemVariants = {
-  offscreen: {
-    y: 50,
-    opacity: 0
-  },
-  onscreen: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      bounce: 0.3,
-      duration: 0.8
-    }
-  }
-};
 
 export default function ExperienceItem({
   role,
   company,
+  institution, // Destructure institution
   duration,
   location,
   descriptionPoints,
-  companyLink,
   isFirst = false,
-  isLast = false
+  isLast = false,
+  isSelected,
+  onClick,
 }: ExperienceItemProps) {
+  const orgName = company || institution || 'Organization'; // Use company, fallback to institution
+
   return (
     <motion.div
-      className={cn(
-        "relative p-6 rounded-xl border border-primary/20 bg-gradient-to-br from-slate-900/80 to-slate-800/80",
-        "hover:shadow-[0_0_25px_rgba(56,189,248,0.3)] transition-all duration-300",
-        "backdrop-blur-sm group"
-      )}
-      initial="offscreen"
-      whileInView="onscreen"
-      viewport={{ once: true, amount: 0.3 }}
-      variants={itemVariants}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.2 }}
+      className="relative flex"
     >
-      {/* Timeline indicator */}
-      {!isFirst && (
-        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-primary/30 -translate-y-full"></div>
-      )}
-      <div className="absolute left-6 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary group-hover:shadow-[0_0_10px_rgb(56,189,248)] transition-shadow"></div>
-      {!isLast && (
-        <div className="absolute left-6 top-1/2 bottom-0 w-0.5 bg-primary/30"></div>
-      )}
-
-      <div className="ml-8">
-        <div className="flex justify-between items-start mb-4 gap-4">
-          <div>
-            <h3 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-300">
-              {role}
-            </h3>
-            {companyLink ? (
-              <a 
-                href={companyLink} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-lg text-slate-300 hover:text-primary transition-colors flex items-center group/link"
-              >
-                {company}
-                <ArrowRight className="ml-1 h-4 w-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
-              </a>
-            ) : (
-              <p className="text-lg text-slate-300">{company}</p>
-            )}
-          </div>
-          <div className="text-right text-sm text-slate-400 flex-shrink-0">
-            <div className="flex items-center justify-end gap-1">
-              <CalendarDays size={14} className="text-primary/80" /> 
-              <span>{duration}</span>
-            </div>
-            <div className="flex items-center justify-end gap-1 mt-1">
-              <MapPin size={14} className="text-primary/80" /> 
-              <span>{location}</span>
-            </div>
-          </div>
+      {/* The vertical timeline bar */}
+      <div className="flex flex-col items-center mr-6">
+        <div className="flex-shrink-0">
+          <div className={cn("w-px h-6 bg-border", isFirst && "bg-transparent")} />
         </div>
+        <div className={cn("flex-shrink-0 w-4 h-4 rounded-full bg-background border-2 relative z-10 transition-colors duration-300",
+             isSelected ? "border-primary" : "border-border")}>
+          {isSelected && <div className="absolute inset-0.5 rounded-full bg-primary animate-pulse" />}
+        </div>
+        <div className={cn("flex-grow w-px bg-border", isLast && "bg-transparent")} />
+      </div>
+
+      {/* The clickable card content */}
+      <motion.button
+        onClick={onClick}
+        whileHover={{ scale: 1.01 }}
+        className={cn(
+          "text-left w-full p-4 rounded-lg border transition-all duration-300 mb-6",
+          isSelected
+            ? "bg-primary/10 border-primary/50 shadow-lg shadow-primary/10"
+            : "bg-card/60 border-border hover:border-primary/30"
+        )}
+      >
+        <h3 className="font-bold text-lg text-foreground leading-tight">{role}</h3>
+        <p className="text-md text-muted-foreground">{orgName} • {location}</p>
+        <p className="text-sm text-muted-foreground/80 mt-1 mb-4">{duration}</p>
         
-        <ul className="space-y-2 text-slate-300 text-sm md:text-base">
-          {descriptionPoints.map((point, index) => (
-            <li 
-              key={index} 
-              className="relative pl-4 before:absolute before:left-0 before:top-2 before:w-2 before:h-2 before:rounded-full before:bg-primary/70"
+        <ul className="space-y-2 text-foreground/90 text-sm">
+          {descriptionPoints.map((point, i) => (
+            <li
+              key={i}
+              className="relative pl-4 before:absolute before:left-0 before:top-[9px] before:w-1.5 before:h-1.5 before:rounded-full before:bg-primary/70"
               dangerouslySetInnerHTML={{ __html: point }}
-            ></li>
+            />
           ))}
         </ul>
-      </div>
+      </motion.button>
     </motion.div>
   );
 }

@@ -1,0 +1,74 @@
+KADRIPATHI KN
++44 7706024001  |  kadripathi.knk@gmail.com  |  kadri-kn.com | Milton Keynes, United Kingdom
+PROFESSIONAL SUMMARY
+AI/ML Engineer specializing in designing and deploying autonomous agentic AI systems for complex industrial applications. Leverages a unique foundation in Aerospace Engineering and full-stack development (Python, FastAPI, Next.js) to architect end-to-end solutions. Proven success in translating business challenges into measurable outcomes, delivering a multi-agent framework that boosted operational efficiency by 60% and reduced errors by 80%.
+KEY ACHIEVEMENTS
+•	Designed Talking Machine an innovative conversational AI agent, enabling Airbus landing gear digital twin to communicate real-time health status, predict potential issues, and recommend repairs in human-understandable language - Mar 2023.
+•	Recipient of the prestigious Young Scientist title from Vignan Bharathi, Government of India, for innovative research on Electric Propulsion presented at the Young Scientists' Conference during the India International Science Festival (IISF) in 2020
+•	Featured in the India Book of Records for building the "Highest Payload-to-Weight Ratio Brushed Nano Drone" in 2020 
+•	Received the Karnataka State Innovation Hackathon Winner award for developing an innovative technology that utilises acoustic waves to improve plant growth, organised by KSIT in 2020
+•	Finalist of the India Innovation Challenge 2018, a joint initiative by the Government of India and Texas Instruments, USA, in recognition of outstanding innovation
+EDUCATION
+MSc Applied Artificial Intelligence, Cranfield University, United Kingdom	Sept 2022 – Aug 2023
+Research Thesis: 
+•	Architected and spearheaded the development of "Talking Machine," an innovative agentic AI system, in collaboration with Airbus. This system provides real-time health diagnostics, prognostic insights, and interactive maintenance guidance in natural language for complex landing gear components.
+•	Engineered the core intelligence: A novel two-tiered fault diagnosis model enabling "Talking Machine" to accurately identify component-level faults—even with faulty sensor data—achieving a 6% operational efficiency improvement over existing Airbus diagnostic benchmarks.
+•	Embedded trust and transparency by integrating Explainable AI (XAI) into the diagnostic pipeline, ensuring clarity in fault detection and bolstering safety standards for critical aviation systems.
+•	Published research detailing the "Talking Machine" architecture, its underlying AI models, and performance results in the AIAA SciTech Forum Proceedings.
+BTech Aerospace Engineering, Jain University, India	Aug 2017 – July 2021
+Final year project: Succeeded in the development of a 3D-printed Electro Hydrodynamic Thruster (EHT) for space application, pioneering the design, fabrication, and testing, with a high voltage corona discharge source and micro thrust measuring system. Demonstrated at the Young Scientists' conference during India International Science Festival, securing the second position among the delegates from 32 nations.
+CAREER HISTORY
+Quantum Data Labs Limited (QDL), Milton Keynes, United-Kingdom
+Applied AI Engineer – NLP and GenAI	Nov 2024 – Present
+A pioneering AI start-up developing self-optimizing industrial ecosystems by integrating predictive insight with autonomous action.
+•	Architected and led the development of the company’s core multi-agent AI orchestration framework, a foundational system that enabled the rapid delivery of the flagship MVP (PredictIQ & ProcureIQ) in under 3 months.
+•	Engineered and deployed a suite of sophisticated, specialized agentic AI workflows to automate and optimize the end-to-end industrial procurement lifecycle, resulting in a 60% increase in operational efficiency and an 80% reduction in human errors for pilot customers. Key agents include:
+•	Market Analyser: Automated web data extraction and analysis to generate real-time cost estimations for OEM parts, ensuring accurate project budget forecasting.
+•	Award Recommender: Provided objective, AI-driven bid evaluations based on technical and commercial data, ensuring transparent and fair procurement decisions.
+•	Geopolitical Risk Analyser: Monitored real-time news and social media data (e.g., X/Twitter feeds) to forecast geopolitical impacts on supply chain stability.
+•	Hardware Expert: Utilized advanced Retrieval-Augmented Generation (RAG) and semantic search to intelligently suggest optimal alternative components during supply scarcity.
+•	Deployed the multi-agent system as a full-stack solution within a Next.js application, creating a seamless user interface for interacting with the AI workflows and their outputs.
+•	Systematically fine-tuned, evaluated, and benchmarked multiple state-of-the-art Large Language Models (LLMs) to optimize agent performance, establishing a baseline for future R&D.
+•	Implemented and scaled the AI backend on serverless infrastructure, exposing agent functionalities through robust FastAPI endpoints for high availability and low-latency responses.
+Roshen Process Solutions, Milton Keynes, United Kingdom
+Machine Learning Engineer	Sept 2023 – Nov 2024
+An IT consultancy providing AI-driven software solutions and procurement expertise, affiliated with a UAE-based parent company specializing in advanced procurement services.
+•	Spearheaded the development of an intelligent conversational AI assistant that achieved a 40% increase in client acquisition for sales procurement operations.
+•	Designed and developed a dynamic price recommendation engine, leveraging past behavioral insights of a customer to generate tailored quotations, which increased profit margin for the company by 23% and great customer retention by 33%. Boosting the sale
+Tata Consultancy Services (TCS), Bangalore, India	Dec 2021 – Aug 2022
+Graduate Data Analyst – Python
+Global IT services and consulting company with a strong presence in over 46 countries, providing innovative solutions to clients across various industries.
+•	Assisted in Developing predictive models for credit risk assessment and fraud detection, enhancing security and minimizing losses in the banking sector.
+•	Utilized data analytics to predict customer churn, reducing attrition rates through targeted retention strategies.
+•	Utilized data analysis techniques to segment customers based on their financial behavior, leading to targeted marketing strategies.
+RESEARCH PUBLICATION
+Author of eight research papers on AI, Aerospace Technology and Applied Physics, published in highly reputed international journals, including IEEE and AIAA
+•	"Revolutionizing Human-Machine Interaction: Conversational AI for Intuitive Aircraft Landing Gear Diagnostics," AIAA, SciTech 2026(under review)
+•	" Integrating Explainable AI into Two-Tier ML Models for Trustworthy Aircraft Landing Gear Fault Diagnosis," AIAA, SciTech 2025, January 2025.
+•	"Advancing Fault Diagnosis in Aircraft Landing Gear: An Innovative Two-Tier Machine Learning Approach with Intelligent Sensor Data Management," AIAA, January 2024.
+•	"Performance Study of Electrohydrodynamic Thruster under the Influence of External Magnetic Fields," IEEE, December 2021.
+•	"De-authentication Attacks on Rogue UAVs," IEEE, March 2020.
+•	"An Innovative Technique for Optimizing the Efficiency of Transformers and Inductors," IJRTE, July 2019.
+•	"An Innovative Device to Monitor Material Quality Using Magnetic Permeability," IJRTE, 2018.
+•	"Railway Track Crack and Obstacle Detector," IJARTET, March 2018.
+TECHNICAL SKILLS
+Programming & Scripting: Python (Proficient: Pandas, NumPy, Scikit-learn, Matplotlib, Seaborn), TypeScript, JavaScript
+AI & Machine Learning:
+•	Deep Learning Frameworks: PyTorch, TensorFlow, Keras
+•	LLM & Agentic AI Development: Agno AGI, LangChain, LangGraph, LLM Fine-tuning, Prompt Engineering, RAG (Retrieval Augmented Generation) Architectures, Multi-Agent Systems, Transformer Models
+•	Natural Language Processing (NLP): Hugging Face Transformers, NLTK, Semantic Search, Text Embeddings
+•	Classical ML: Regression, Classification, Clustering, Dimensionality Reduction, Anomaly Detection
+•	Explainable AI (XAI): SHAP, LIME
+Full-Stack Development:
+•	Backend Frameworks: FastAPI (Python), Node.js (with TypeScript)
+•	Frontend Frameworks: Next.js (React with TypeScript)
+•	API Design & Development: RESTful APIs
+Databases & Data Management: Supabase, PostgreSQL
+Containerization & Orchestration: Docker
+CI/CD Pipelines and Version Control: Jenkins, GitHub Actions
+Cloud Platforms: AWS - Sagemaker, EC2, S3, Lambda, experienced in managing Virtual Private Servers (VPS)
+SKILLS, INTERESTS & EXTRACURRICULAR ACTIVITIES
+•	Languages: Fluent in English (IELTS: 8) and native Kannada speaker
+•	Individual Interests: Hobbyist Electronics (Replicating Nicolas Tesla’s inventions), reading personal development books, walking, fitness, and cooking
+•	Volunteering: Maaruthsakha Aerospace Labs - NGO providing solutions for societal problems. Played a significant role in disinfecting hospital surfaces using UVc sterilizers and UAV disinfectant spray during the COVID-19 pandemic outbreak
+•	Memberships: The Royal Aeronautical Society, London

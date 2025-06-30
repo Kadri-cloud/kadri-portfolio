@@ -64,10 +64,8 @@ kadri-portfolio/
     │   │   │                   # - Imports: shadcn/ui (NavigationMenu, Sheet, Button), Link, usePathname, lucide-react icons
     │   │   └── ChatbotTrigger.tsx # (Future, as created by PowerShell script) Button to open chatbot
     │   │
-    │   ├── chatbot/            # (Future, as created by PowerShell script) Chatbot UI components
-    │   │   ├── ChatInput.tsx
-    │   │   ├── ChatWindow.tsx
-    │   │   └── Message.tsx
+    │   ├── chat/            # (Future, as created by PowerShell script) Chatbot UI components
+    │   │   └── AIChat.tsx
     │   │
     │   ├── projects/           # (Future, as created by PowerShell script)
     │   │   └── ProjectCard.tsx
@@ -89,6 +87,6 @@ kadri-portfolio/
         ├── data.ts             # Static data for your portfolio (skills, experience, education, projects)
         │                       # - Exports: Arrays/objects of data, interfaces for data types
         │                       # - Imports: lucide-react (for IconComponent types and references)
-        ├── chatbotLogic.ts     # (Future, as created by PowerShell script) Core logic for chatbot
+        ├── persona.ts     
         ├── utils.ts            # Utility functions, including `cn` from shadcn/ui for conditional class names
         │                       # - Exports: cn function (and any other custom utils)

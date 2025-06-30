@@ -34,7 +34,12 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // THE FIX: Check if this is the first real user message
+    // The initial message history only contains the welcome message from the assistant.
+    const isFirstMessage = messages.length === 1 && messages[0].role === 'assistant';
+    
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput('');
     setIsLoading(true);
 
@@ -45,31 +50,28 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [
-            ...messages.map(msg => ({ role: msg.role, content: msg.content })),
-            { role: 'user', content: input }
-          ]
+          // We send the full history so the server can decide what to do
+          messages: newMessages, 
+          // And we send the signal
+          isFirstMessage: isFirstMessage 
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get response');
-      }
-
+      if (!response.ok) throw new Error('Failed to get response from the server.');
+      
       const data = await response.json();
       const botMessage: Message = {
-        id: Date.now().toString(),
+        id: (Date.now() + 1).toString(),
         content: data.content,
         role: 'assistant',
         timestamp: new Date()
       };
-
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage: Message = {
-        id: Date.now().toString(),
-        content: 'Sorry, I encountered an error. Please try again later.',
+        id: (Date.now() + 1).toString(),
+        content: 'Sorry, I encountered an error connecting to my core systems. Please try again later.',
         role: 'assistant',
         timestamp: new Date()
       };
@@ -80,16 +82,15 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
   };
 
   useEffect(() => {
-    // Initial welcome message
     if (messages.length === 0) {
       setMessages([{
         id: 'welcome',
-        content: `**Hello!** I'm Kadri's AI assistant powered by OpenRouter. How can I help you today?`,
+        content: `**Hello!** I'm Kadri's AI assistant. I've just reviewed his CV and personal notes to assist you better. How can I help?`,
         role: 'assistant',
         timestamp: new Date()
       }]);
     }
-  }, [messages.length]); // Fixed: Added messages.length to dependency array
+  }, [messages.length]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -111,70 +112,28 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/20 to-primary/10 border-b border-primary/20">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-primary/10 text-primary">
-              <Bot className="h-6 w-6" />
-            </div>
+            <div className="p-2 rounded-full bg-primary/10 text-primary"><Bot className="h-6 w-6" /></div>
             <div>
-              {/* Fixed: Escaped apostrophe */}
               <h2 className="font-bold text-lg">Kadri's AI Assistant</h2>
               <div className="flex items-center gap-2">
-                <div className={cn(
-                  "h-2 w-2 rounded-full",
-                  isLoading ? "bg-yellow-400 animate-pulse" : "bg-green-400"
-                )} />
-                <span className="text-xs text-muted-foreground">
-                  {isLoading ? "Thinking..." : "Online"}
-                </span>
+                <div className={cn("h-2 w-2 rounded-full", isLoading ? "bg-yellow-400 animate-pulse" : "bg-green-400")} />
+                <span className="text-xs text-muted-foreground">{isLoading ? "Thinking..." : "Online"}</span>
               </div>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-primary"
-            onClick={onClose}
-          >
-            <X className="h-5 w-5" />
-          </Button>
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" onClick={onClose}><X className="h-5 w-5" /></Button>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-slate-700/50">
           {messages.map(message => (
-            <motion.div
-              key={message.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={cn(
-                "flex gap-3",
-                message.role === 'user' ? 'justify-end' : 'justify-start'
-              )}
-            >
-              {message.role === 'assistant' && (
-                <div className="flex-shrink-0 mt-1 p-1.5 rounded-full bg-primary/10 text-primary">
-                  <Bot className="h-4 w-4" />
-                </div>
-              )}
-              <div
-                className={cn(
-                  "max-w-[80%] rounded-xl p-4 prose prose-invert prose-sm",
-                  message.role === 'user'
-                    ? 'bg-primary/10 border border-primary/20'
-                    : 'bg-slate-700/50 border border-slate-600/50'
-                )}
-              >
-                <Markdown remarkPlugins={[remarkGfm]}>
-                  {message.content}
-                </Markdown>
-                <div className="text-xs text-muted-foreground mt-2 text-right">
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
+            <motion.div key={message.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={cn("flex gap-3", message.role === 'user' ? 'justify-end' : 'justify-start')}>
+              {message.role === 'assistant' && (<div className="flex-shrink-0 mt-1 p-1.5 rounded-full bg-primary/10 text-primary self-start"><Bot className="h-4 w-4" /></div>)}
+              <div className={cn("max-w-[80%] rounded-xl p-3 prose prose-invert prose-sm prose-p:my-2", message.role === 'user' ? 'bg-primary/10 border border-primary/20' : 'bg-slate-700/50 border border-slate-600/50')}>
+                <Markdown remarkPlugins={[remarkGfm]}>{message.content}</Markdown>
+                <div className="text-xs text-muted-foreground mt-2 text-right">{message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
               </div>
-              {message.role === 'user' && (
-                <div className="flex-shrink-0 mt-1 p-1.5 rounded-full bg-blue-500/10 text-blue-400">
-                  <User className="h-4 w-4" />
-                </div>
-              )}
+              {message.role === 'user' && (<div className="flex-shrink-0 mt-1 p-1.5 rounded-full bg-blue-500/10 text-blue-400 self-start"><User className="h-4 w-4" /></div>)}
             </motion.div>
           ))}
           <div ref={messagesEndRef} />
@@ -183,31 +142,12 @@ export default function AIChat({ onClose }: { onClose: () => void }) {
         {/* Input Area */}
         <form onSubmit={handleSubmit} className="p-4 border-t border-slate-700/50 bg-slate-900/50">
           <div className="relative">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask me anything about AI, quantum computing, or full-stack development..."
-              className="pr-12 resize-none"
-              rows={2}
-              disabled={isLoading}
-            />
-            <Button
-              type="submit"
-              size="icon"
-              className="absolute right-2 bottom-2 h-8 w-8"
-              disabled={!input.trim() || isLoading}
-            >
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            </Button>
+            <Textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); } }} placeholder="Ask about my projects, skills, or experience..." className="pr-12 resize-none" rows={2} disabled={isLoading}/>
+            <Button type="submit" size="icon" className="absolute right-2 bottom-2 h-8 w-8" disabled={!input.trim() || isLoading}>{isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</Button>
           </div>
           <div className="flex justify-between items-center mt-2">
-            <span className="text-xs text-muted-foreground">
-              Powered by Kadri.KN OS
-            </span>
-            <div className="flex items-center gap-1 text-xs text-primary">
-              <Rocket className="h-3 w-3" />
-              <span>Free Research Preview</span>
-            </div>
+            <span className="text-xs text-muted-foreground">Powered by Kadri.KN OS</span>
+            <div className="flex items-center gap-1 text-xs text-primary"><Rocket className="h-3 w-3" /><span>Context-Aware Preview</span></div>
           </div>
         </form>
       </motion.div>
