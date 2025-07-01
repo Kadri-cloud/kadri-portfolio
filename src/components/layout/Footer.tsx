@@ -3,17 +3,22 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Mail } from 'lucide-react';
+// UPDATED: Imported new icons for your links
+import { Github, Linkedin, Mail, Phone, GraduationCap, BookMarked } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
+  // UPDATED: Added all your new links and icons
   const socialLinks = [
-    { name: 'GitHub', href: 'https://github.com/your-username', icon: Github },
-    { name: 'LinkedIn', href: '#', icon: Linkedin },
-    { name: 'Email', href: 'mailto:kadripathi.knk@gmail.com', icon: Mail },
+    { name: 'GitHub', href: 'https://github.com/Kadri-cloud/', icon: Github },
+    { name: 'LinkedIn', href: 'https://www.linkedin.com/in/kadripathi-kn/', icon: Linkedin },
+    { name: 'ResearchGate', href: 'https://www.researchgate.net/profile/Kadripathi-K-N', icon: BookMarked },
+    { name: 'Google Scholar', href: 'https://scholar.google.com/citations?user=y62GU5IAAAAJ&hl=en', icon: GraduationCap },
+    { name: 'Email', href: 'mailto:hello@kadri-kn.com', icon: Mail },
+    { name: 'Phone', href: 'tel:+447733110656', icon: Phone },
   ];
 
   return (
@@ -24,7 +29,7 @@ export default function Footer() {
       className="w-full mt-auto border-t border-border/40"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center text-center text-sm text-muted-foreground">
-        <div className="flex justify-center space-x-4 mb-6">
+        <div className="flex justify-center flex-wrap gap-x-2 sm:gap-x-4 mb-6">
           {socialLinks.map((social) => (
             <Link key={social.name} href={social.href} target="_blank" rel="noopener noreferrer">
               <Button 
@@ -44,10 +49,9 @@ export default function Footer() {
         <p>
           © {currentYear} Kadripathi KN. All Rights Reserved.
         </p>
+        {/* UPDATED: Replaced the "Engineered with" text */}
         <p className="mt-2">
-          Engineered with <Link href="https://nextjs.org" target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline-offset-4 hover:underline">Next.js</Link>,
-          {' '} <Link href="https://tailwindcss.com" target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline-offset-4 hover:underline">Tailwind CSS</Link>,
-          {' & '} <Link href="https://ui.shadcn.com" target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline-offset-4 hover:underline">shadcn/ui</Link>.
+          This app is engineered and build by Kadri.
         </p>
       </div>
     </motion.footer>

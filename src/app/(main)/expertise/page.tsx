@@ -1,180 +1,198 @@
 // src/app/(main)/expertise/page.tsx
 'use client';
 
-import React, { useState } from 'react';
-import { motion, Variants, AnimatePresence } from 'framer-motion';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { Brain, Briefcase, Code, Cloud, Layers, GraduationCap, Server, Database, Zap, Rocket, Award, BookOpen, Plane, Atom } from 'lucide-react';
-import ExperienceItem from '@/components/expertise/ExperienceItem';
-import SkillBadge from '@/components/expertise/SkillBadge';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Briefcase, GraduationCap, CheckCircle, BrainCircuit, Code, Users, Cpu, FileText, Award, ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
-// BACKGROUND: A single, optimized background component
-const GalaxyBackground = () => (
-  <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-    <div className="absolute inset-0 bg-background" />
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] opacity-40" />
-    {[...Array(50)].map((_, i) => (
-      <motion.div
-        key={`star-${i}`}
-        className="absolute rounded-full bg-primary"
-        initial={{
-          top: `${Math.random() * 100}%`,
-          left: `${Math.random() * 100}%`,
-          width: `${Math.random() * 2 + 1}px`,
-          height: `${Math.random() * 2 + 1}px`,
-        }}
-        animate={{ opacity: [0.1, 1, 0.1] }}
-        transition={{ duration: Math.random() * 5 + 5, repeat: Infinity, ease: "easeInOut" }}
-      />
-    ))}
+const TechBackground = () => (
+  <div className="absolute inset-0 -z-10 h-full w-full bg-background">
+    <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+    <div className="absolute left-0 right-0 top-[-10%] h-[1000px] w-[1000px] rounded-full bg-[radial-gradient(circle_400px_at_50%_300px,#3b82f633,transparent)]"></div>
   </div>
 );
 
-// REUSABLE COMPONENT: For sections that animate when they scroll into view
-const AnimatedSection = ({ children, className }: { children: React.ReactNode, className?: string }) => {
+// --- DATA (No changes needed here) ---
+const timelineData = [
+  { id: 'qdl', type: 'work', title: 'Applied AI Engineer – NLP and GenAI', company: 'Quantum Data Labs (QDL)', duration: 'Nov 2024 – Present', description: "At a pioneering AI start-up, I architected and led the development of the core multi-agent AI orchestration framework, a foundational system enabling the rapid delivery of the company's flagship MVP.", highlights: [ { text: "Engineered agentic AI workflows, boosting pilot customer operational efficiency by 60% and reducing human errors by 80%.", icon: BrainCircuit }, { text: "Developed key agents including a Market Analyser for real-time cost estimation and an Award Recommender for objective bid evaluation.", icon: Users }, { text: "Deployed the entire system as a full-stack solution using Next.js for the frontend and FastAPI for the high-performance AI backend.", icon: Code }, ], skills: ['Agentic AI', 'Multi-Agent Systems', 'RAG', 'LLM Fine-Tuning', 'FastAPI', 'Next.js', 'Python', 'AWS', 'Docker'] },
+  { id: 'roshen', type: 'work', title: 'Machine Learning Engineer', company: 'Roshen Process Solutions', duration: 'Sept 2023 – Nov 2024', description: "For an IT consultancy specializing in AI-driven procurement, I developed intelligent systems that directly translated to significant business growth and client satisfaction.", highlights: [ { text: "Spearheaded the development of a conversational AI assistant that achieved a 40% increase in client acquisition for sales operations.", icon: BrainCircuit }, { text: "Designed a dynamic pricing engine that leveraged behavioral insights, increasing company profit margins by 23% and customer retention by 33%.", icon: Cpu }, ], skills: ['Conversational AI', 'Predictive Modeling', 'NLP', 'PyTorch', 'Scikit-learn', 'REST APIs'] },
+  { id: 'tcs', type: 'work', title: 'Graduate Data Analyst', company: 'Tata Consultancy Services (TCS)', duration: 'Dec 2021 – Aug 2022', description: "At a global IT and consulting powerhouse, I applied data analysis and machine learning techniques to solve complex challenges for clients in the banking sector.", highlights: [ { text: "Developed predictive models for credit risk and fraud detection, enhancing security and minimizing financial losses.", icon: Cpu }, { text: "Utilized data analytics to predict customer churn, enabling targeted retention strategies that successfully reduced attrition rates.", icon: Users }, ], skills: ['Data Analysis', 'Pandas', 'NumPy', 'Matplotlib', 'Classification', 'Regression', 'Clustering'] },
+  { id: 'cranfield', type: 'education', title: 'MSc, Applied Artificial Intelligence', company: 'Cranfield University, UK', duration: 'Sept 2022 – Aug 2023', description: 'Specialized in applying AI to complex, real-world industrial problems, culminating in a thesis project in collaboration with Airbus.', highlights: [ { text: 'Thesis: Architected "Talking Machine," an innovative agentic AI system for real-time health diagnostics and maintenance of Airbus landing gear.', icon: FileText }, { text: "Engineered a novel two-tiered fault diagnosis model that achieved a 6% operational efficiency gain over existing Airbus benchmarks.", icon: BrainCircuit }, { text: "Embedded trust and transparency by integrating Explainable AI (XAI) into the diagnostic pipeline, bolstering safety for critical aviation systems.", icon: Code }, ], skills: ['Agentic AI', 'Explainable AI (XAI)', 'Fault Diagnosis', 'PyTorch', 'Aerospace Systems', 'Published Research'] },
+  { id: 'jain', type: 'education', title: 'BTech, Aerospace Engineering', company: 'Jain University, India', duration: 'Aug 2017 – July 2021', description: 'A comprehensive engineering program focused on aeronautics and astronautics, with a strong emphasis on hands-on projects and innovative research.', highlights: [ { text: "Final Project: Successfully developed a 3D-printed Electrohydrodynamic (EHT) Thruster for space applications, pioneering its design and testing.", icon: FileText }, { text: "Secured 2nd place at the prestigious Young Scientists' Conference (IISF) for demonstrating the EHT project.", icon: BrainCircuit }, { text: "Featured in the India Book of Records for designing and building the 'Highest Payload-to-Weight Ratio Brushed Nano Drone'.", icon: Code }, ], skills: ['Aerospace Engineering', 'Propulsion Systems', '3D Printing', 'Electronics', 'Award-winning Innovation'] }
+];
+
+const awardsData = [
+    { title: "Young Scientist", issuer: "Govt. of India, IISF", year: "2020", description: "For innovative research on Electric Propulsion presented at the Young Scientists' Conference." },
+    { title: "India Book of Records", issuer: "National Record", year: "2020", description: "For building the 'Highest Payload-to-Weight Ratio Brushed Nano Drone'." },
+    { title: "State Innovation Hackathon Winner", issuer: "Karnataka State Govt.", year: "2020", description: "For developing an innovative technology that utilises acoustic waves to improve plant growth." },
+    { title: "India Innovation Challenge Finalist", issuer: "Govt. of India & Texas Instruments", year: "2018", description: "In recognition of outstanding innovation among thousands of participants." }
+];
+
+const DetailCard = ({ item }: { item: typeof timelineData[0] }) => (
+  <Card className="bg-card/80 border-border/50 backdrop-blur-sm shadow-xl shadow-background">
+    <CardHeader>
+      <CardTitle className="text-2xl font-bold text-foreground">{item.title}</CardTitle>
+      <CardDescription className="text-base">{item.company} • {item.duration}</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <p className="text-muted-foreground mb-6">{item.description}</p>
+      <h4 className="font-semibold text-foreground mb-4">Key Highlights</h4>
+      <ul className="space-y-3 mb-8">
+        {item.highlights.map((highlight, i) => (
+          <li key={i} className="flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+            <span className="text-foreground/90">{highlight.text}</span>
+          </li>
+        ))}
+      </ul>
+      <h4 className="font-semibold text-foreground mb-4">Core Technologies & Skills</h4>
+      <div className="flex flex-wrap gap-2">
+        {item.skills.map(skill => (
+          <Badge key={skill} variant="secondary" className="px-3 py-1 text-sm">{skill}</Badge>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+);
+
+export default function ExpertisePageFinal() {
+  const [selectedId, setSelectedId] = useState<string | null>(timelineData[0].id);
+  const [arrowStyle, setArrowStyle] = useState({});
+  const timelineRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // --- FIX: Create refs for mobile accordion items ---
+  const accordionRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const selectedItem = useMemo(() => 
+    timelineData.find(item => item.id === selectedId)
+  , [selectedId]);
+
+  useEffect(() => {
+    const selectedIndex = timelineData.findIndex(item => item.id === selectedId);
+    if (selectedIndex === -1) return;
+    
+    // For desktop arrow
+    const selectedRef = timelineRefs.current[selectedIndex];
+    if (selectedRef) {
+      const top = selectedRef.offsetTop + selectedRef.offsetHeight / 2;
+      setArrowStyle({ top: `${top}px` });
+    }
+  }, [selectedId]);
+
+  // --- FIX: New handler for mobile accordion click ---
+  const handleMobileClick = (itemId: string, index: number) => {
+    const newSelectedId = selectedId === itemId ? null : itemId;
+    setSelectedId(newSelectedId);
+
+    // After state update, scroll the clicked item into view
+    if (newSelectedId !== null) {
+      // Use a timeout to ensure the scroll happens after the DOM has updated
+      setTimeout(() => {
+        accordionRefs.current[index]?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 50); // A small delay is sometimes needed for the animation to start
+    }
+  };
+
   return (
-    <motion.div
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ staggerChildren: 0.2 }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 12 } },
-};
-
-// DATA
-const technicalSkills = {
-  'AI Specialties': [{ name: "Agentic AI Systems", icon: Rocket }, { name: "LLM Fine-tuning", icon: Brain }, { name: "Multi-Agent Architectures", icon: Layers }, { name: "Explainable AI (XAI)", icon: Zap }, { name: "RAG Architectures", icon: Database }],
-  'Engineering & Research': [{ name: "Aerospace Systems", icon: Plane }, { name: "Electrohydrodynamics", icon: Atom }, { name: "3D Printing", icon: Server }, { name: "Published Researcher", icon: BookOpen }, { name: "Award-winning Innovator", icon: Award }],
-  'Technical Stack': [{ name: "Python (PyTorch/TF)", icon: Code }, { name: "Next.js/React", icon: Server }, { name: "FastAPI", icon: Code }, { name: "PostgreSQL", icon: Database }, { name: "AWS Cloud", icon: Cloud }],
-};
-const workExperience = [
-  { role: "Applied AI Engineer – NLP and GenAI", company: "Quantum Data Labs Limited (QDL)", duration: "Nov 2024 - Present", location: "Milton Keynes, UK", descriptionPoints: ["Architected core <strong>multi-agent AI framework</strong> enabling MVP delivery in 3 months", "Engineered agentic workflows boosting <strong>60% operational efficiency</strong>", "Deployed full-stack solution with <strong>Next.js</strong> and <strong>FastAPI</strong>", "Developed specialized agents for procurement automation and risk analysis"], skillsUsed: ["Agentic AI Systems", "Multi-Agent Architectures", "FastAPI", "Next.js/React", "AWS Cloud"] },
-  { role: "Machine Learning Engineer", company: "Roshen Process Solutions", duration: "Sept 2023 - Nov 2024", location: "Milton Keynes, UK", descriptionPoints: ["Built conversational AI increasing <strong>client acquisition by 40%</strong>", "Developed dynamic pricing engine boosting <strong>profits by 23%</strong>", "Implemented NLP solutions using Hugging Face transformers"], skillsUsed: ["Python (PyTorch/TF)", "Explainable AI (XAI)", "PostgreSQL", "Next.js/React"] }
-];
-const education = [
-  { degree: "MSc Applied Artificial Intelligence", institution: "Cranfield University", duration: "Sept 2022 - Aug 2023", location: "United Kingdom", descriptionPoints: ["Thesis: <strong>\"Talking Machine\"</strong> agentic AI for Airbus landing gear", "Developed novel two-tiered fault diagnosis model (<strong>6% efficiency gain</strong>)", "Integrated <strong>Explainable AI (XAI)</strong> for aviation safety", "Published in <strong>AIAA SciTech Forum</strong>"], skillsUsed: ["Agentic AI Systems", "Explainable AI (XAI)", "Published Researcher", "Python (PyTorch/TF)"] },
-  { degree: "BTech Aerospace Engineering", institution: "Jain University", duration: "Aug 2017 - July 2021", location: "India", descriptionPoints: ["Developed <strong>3D-printed EHT thruster</strong> for space applications", "2nd place at <strong>IISF Young Scientists' conference</strong>", "Featured in <strong>India Book of Records</strong> for nano drone design"], skillsUsed: ["Aerospace Systems", "Electrohydrodynamics", "3D Printing", "Award-winning Innovator"] }
-];
-const awards = [
-  { title: "Young Scientist Award", issuer: "India Int'l Science Festival", year: "2020", description: "For innovative research on Electric Propulsion" },
-  { title: "India Book of Records", issuer: "National Record", year: "2020", description: "Highest Payload-to-Weight Ratio Drone" },
-  { title: "Innovation Hackathon Winner", issuer: "Karnataka State Gov't", year: "2020", description: "Acoustic wave tech for plant growth" }
-];
-
-export default function ExpertisePage() {
-  const [selectedExperience, setSelectedExperience] = useState<number>(0);
-
-  const highlightedSkills = (
-    selectedExperience < workExperience.length 
-      ? workExperience[selectedExperience].skillsUsed 
-      : education[selectedExperience - workExperience.length]?.skillsUsed
-  ) || [];
-
-  return (
-    <div className="relative overflow-x-hidden">
-      <GalaxyBackground />
-      
-      <main className="container mx-auto px-4 py-8 md:py-12 min-h-screen relative z-10">
-        
-        <motion.div 
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 12 }}
-        >
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-muted-foreground">
-            AI & Aerospace
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            An interactive map of my technical universe. Select career and academic nodes below to reveal the skill constellations.
-          </p>
+    <div className="relative isolate min-h-screen w-full overflow-hidden">
+      <TechBackground />
+      <main className="container mx-auto px-4 py-16 sm:py-24 relative z-10">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mx-auto max-w-3xl text-center mb-16">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">My Professional Trajectory</h1>
+          <p className="mt-6 text-lg leading-8 text-muted-foreground">A journey from aerospace engineering to pioneering agentic AI. Select a node to explore the details of my experience.</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          
-          {/* LEFT COLUMN: TIMELINE */}
-          <div className="lg:col-span-3 space-y-12">
-            <AnimatedSection>
-              <motion.h2 variants={itemVariants} className="text-2xl font-bold flex items-center gap-3 mb-6"><Briefcase className="text-primary"/> Professional Journey</motion.h2>
-              {workExperience.map((exp, index) => (
-                <motion.div key={index} variants={itemVariants}>
-                  <ExperienceItem {...exp} isSelected={selectedExperience === index} onClick={() => setSelectedExperience(index)} isFirst={index === 0} />
-                </motion.div>
+        <div className="relative">
+          {/* DESKTOP: 2-Column Layout */}
+          <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="lg:col-span-1 space-y-4">
+              {timelineData.map((item, index) => (
+                <button
+                  key={item.id}
+                  ref={el => timelineRefs.current[index] = el}
+                  onClick={() => setSelectedId(item.id)}
+                  className={cn("w-full text-left p-4 rounded-lg border transition-all duration-300 flex items-start gap-4", selectedId === item.id ? "bg-primary/10 border-primary/50" : "bg-card/80 border-border hover:bg-muted/50")}
+                >
+                   <div className={cn("mt-1 flex-shrink-0 h-8 w-8 rounded-full border-2 flex items-center justify-center", selectedId === item.id ? "border-primary bg-primary/20" : "border-border bg-card")}>
+                    {item.type === 'work' ? <Briefcase className={cn("h-4 w-4", selectedId === item.id ? "text-primary" : "text-muted-foreground")} /> : <GraduationCap className={cn("h-4 w-4", selectedId === item.id ? "text-primary" : "text-muted-foreground")} />}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">{item.title}</p>
+                    <p className="text-sm text-muted-foreground">{item.company}</p>
+                  </div>
+                </button>
               ))}
-            </AnimatedSection>
-
-            <AnimatedSection>
-              <motion.h2 variants={itemVariants} className="text-2xl font-bold flex items-center gap-3 mb-6"><GraduationCap className="text-primary"/> Academic & Research</motion.h2>
-              {education.map((edu, index) => (
-                <motion.div key={index} variants={itemVariants}>
-                  <ExperienceItem {...edu} role={edu.degree} isSelected={selectedExperience === workExperience.length + index} onClick={() => setSelectedExperience(workExperience.length + index)} isFirst={index === 0} isLast={index === education.length - 1} />
-                </motion.div>
-              ))}
-            </AnimatedSection>
-            
-            <AnimatedSection>
-              <motion.h2 variants={itemVariants} className="text-2xl font-bold flex items-center gap-3 mb-6"><Award className="text-primary"/> Honors & Awards</motion.h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {awards.map((award, index) => (
-                  <motion.div key={index} variants={itemVariants} whileHover={{ y: -5, transition: { duration: 0.2 } }}>
-                    <Card className="bg-card/80 border-border hover:border-primary/50 transition-colors h-full">
-                      <CardHeader>
-                        <CardTitle className="text-lg">{award.title}</CardTitle>
-                        <CardDescription>{award.issuer} • {award.year}</CardDescription>
-                      </CardHeader>
-                      <CardContent><p className="text-sm text-muted-foreground">{award.description}</p></CardContent>
-                    </Card>
+            </div>
+            <div className="lg:col-span-2 lg:sticky top-24 h-fit">
+              <AnimatePresence mode="wait">
+                {selectedItem && (
+                  <motion.div key={selectedId} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ type: 'spring', stiffness: 100, damping: 20 }}>
+                    <DetailCard item={selectedItem} />
                   </motion.div>
-                ))}
-              </div>
-            </AnimatedSection>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
+          
+          <motion.div className="hidden lg:block absolute left-[33.33%] -translate-x-1/2 -translate-y-1/2 w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-r-[10px] border-r-border" style={arrowStyle} animate={{ top: arrowStyle.top }} transition={{ type: 'spring', stiffness: 200, damping: 25 }} />
 
-          {/* RIGHT COLUMN: STICKY SKILL MATRIX */}
-          <div className="lg:col-span-2 lg:sticky top-24 h-fit">
-            <motion.div 
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ type: 'spring', stiffness: 100, damping: 15, delay: 0.3 }}
-            >
-              <Card className="bg-card/80 border-primary/20 backdrop-blur-sm shadow-[0_0_20px_rgba(56,189,248,0.1)] relative overflow-hidden">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3"><Code className="text-primary" /> Technical Capabilities</CardTitle>
-                  <CardDescription>Skills highlighted by the selected experience.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {Object.entries(technicalSkills).map(([category, skills]) => (
-                    <div key={category}>
-                      <h4 className="font-semibold text-md text-muted-foreground mb-3">{category}</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <AnimatePresence>
-                          {skills.map((skill, index) => (
-                              <SkillBadge
-                                key={skill.name}
-                                skill={skill.name}
-                                IconComponent={skill.icon}
-                                isHighlighted={highlightedSkills.includes(skill.name)}
-                                delay={(index * 0.05)}
-                              />
-                          ))}
-                        </AnimatePresence>
-                      </div>
+          {/* MOBILE: Accordion Layout */}
+          <div className="block lg:hidden space-y-4">
+            {timelineData.map((item, index) => (
+              // --- FIX: Add ref to the container div ---
+              <div key={item.id} ref={el => accordionRefs.current[index] = el} className="border-b border-border/50 last:border-b-0 scroll-mt-20">
+                {/* --- FIX: Use the new click handler --- */}
+                <button onClick={() => handleMobileClick(item.id, index)} className="w-full text-left p-4 flex justify-between items-center">
+                  <div className="flex items-start gap-4">
+                    <div className={cn("mt-1 flex-shrink-0 h-8 w-8 rounded-full border-2 flex items-center justify-center", selectedId === item.id ? "border-primary bg-primary/20" : "border-border bg-card")}>
+                        {item.type === 'work' ? <Briefcase className={cn("h-4 w-4", selectedId === item.id ? "text-primary" : "text-muted-foreground")} /> : <GraduationCap className={cn("h-4 w-4", selectedId === item.id ? "text-primary" : "text-muted-foreground")} />}
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </motion.div>
+                    <div>
+                        <p className="font-semibold text-foreground">{item.title}</p>
+                        <p className="text-sm text-muted-foreground">{item.company}</p>
+                    </div>
+                  </div>
+                  <ChevronDown className={cn("h-5 w-5 text-muted-foreground transition-transform duration-300", selectedId === item.id ? "rotate-180 text-primary" : "rotate-0")} />
+                </button>
+                <AnimatePresence>
+                  {selectedId === item.id && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: 'easeInOut' }} className="overflow-hidden">
+                      <div className="p-4 pt-0">
+                        <DetailCard item={item} />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
           </div>
         </div>
+        
+        <motion.div className="mt-24" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} transition={{ staggerChildren: 0.15 }}>
+            <motion.div variants={{hidden: {opacity:0, y:-20}, visible:{opacity:1, y:0}}} className="mx-auto max-w-3xl text-center mb-12">
+                <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Honors & Achievements</h2>
+                <p className="mt-4 text-lg text-muted-foreground">Key recognitions for innovation and research contributions.</p>
+            </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {awardsData.map((award, index) => (
+                    <motion.div key={index} variants={{hidden: {opacity:0, y:20}, visible:{opacity:1, y:0}}}>
+                        <Card className="h-full bg-card/80 border-border/50 hover:border-primary/50 hover:bg-muted/30 transition-all duration-300">
+                            <CardHeader>
+                                <div className="mb-2"><div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center"><Award className="w-5 h-5 text-primary"/></div></div>
+                                <CardTitle>{award.title}</CardTitle>
+                                <CardDescription>{award.issuer} • {award.year}</CardDescription>
+                            </CardHeader>
+                            <CardContent><p className="text-sm text-muted-foreground">{award.description}</p></CardContent>
+                        </Card>
+                    </motion.div>
+                ))}
+            </div>
+        </motion.div>
       </main>
     </div>
   );

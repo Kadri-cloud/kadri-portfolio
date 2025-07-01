@@ -1,23 +1,22 @@
 // src/app/(main)/page.tsx
 'use client';
 
-// No changes needed to imports
 import React, { useEffect, useState, useRef, FormEvent } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowRight, Download, BrainCircuit, Briefcase, Code, Layers, Cloud, Server, GitBranch, Database, TerminalSquare, FileText, Star } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { ArrowRight, Download, BrainCircuit, Layers, Cloud, Server, GitBranch, TerminalSquare, FileText, Star, ExternalLink, FileDown } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { useTheme } from 'next-themes';
 import { ResponsivePie } from '@nivo/pie';
 import { KADRI_OS_PERSONA } from '@/lib/persona';
+// --- STEP 1: IMPORT DATA FROM THE CENTRALIZED FILE ---
+import { publications } from '@/lib/data';
 
-// No changes to variants, glows, or data
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -44,16 +43,9 @@ const techStackData = [
   { "id": "Full-Stack (JS/TS)", "label": "JS/TS Stack", "value": 15, "color": "hsl(53, 70%, 50%)" },
   { "id": "Cloud & DevOps", "label": "Cloud/DevOps", "value": 10, "color": "hsl(344, 70%, 50%)" }
 ];
-const publications = [
-  { title: "Revolutionizing Human-Machine Interaction: Conversational AI for Intuitive Aircraft Landing Gear Diagnostics", journal: "AIAA, SciTech 2026 (under review)" },
-  { title: "Integrating Explainable AI into Two-Tier ML Models for Trustworthy Aircraft Landing Gear Fault Diagnosis", journal: "AIAA, SciTech 2025, January 2025" },
-  { title: "Advancing Fault Diagnosis in Aircraft Landing Gear: An Innovative Two-Tier Machine Learning Approach with Intelligent Sensor Data Management", journal: "AIAA, January 2024" },
-  { title: "Performance Study of Electrohydrodynamic Thruster under the Influence of External Magnetic Fields", journal: "IEEE, December 2021" },
-  { title: "De-authentication Attacks on Rogue UAVs", journal: "IEEE, March 2020" },
-  { title: "An Innovative Technique for Optimizing the Efficiency of Transformers and Inductors", journal: "IJRTE, July 2019" },
-  { title: "An Innovative Device to Monitor Material Quality Using Magnetic Permeability", journal: "IJRTE, 2018" },
-  { title: "Railway Track Crack and Obstacle Detector", journal: "IJARTET, March 2018" }
-];
+// --- STEP 2: REMOVE THE OLD LOCAL PUBLICATIONS ARRAY ---
+// The publications data is now imported from `lib/data.ts`.
+
 interface ChatMessage {
   id: number;
   sender: 'user' | 'system';
@@ -64,11 +56,10 @@ interface ChatMessage {
 export default function LandingDashboardPage() {
   const { theme } = useTheme();
 
-  // No changes to metrics or skills
   const metrics = {
     operationalEfficiencyBoost: 60,
     errorReduction: 80,
-    researchPapers: 8,
+    researchPapers: publications.length, // Now dynamically counts the papers
     keyAchievements: 5,
     projectsDeployed: 12,
     aiAgentsCreated: 8,
@@ -78,7 +69,7 @@ export default function LandingDashboardPage() {
     { name: "Deep Learning (PyTorch/TF)", level: 90, icon: <Layers className="h-4 w-4" /> },
     { name: "Full-Stack (Next.js/FastAPI)", level: 85, icon: <Server className="h-4 w-4" /> },
     { name: "Cloud AI (AWS)", level: 82, icon: <Cloud className="h-4 w-4" /> },
-    { name: "Explainable AI (XAI)", level: 80, icon: <Code className="h-4 w-4" /> },
+    { name: "Explainable AI (XAI)", level: 80, icon: <BrainCircuit className="h-4 w-4" /> },
     { name: "CI/CD & DevOps", level: 75, icon: <GitBranch className="h-4 w-4" /> }
   ];
 
@@ -86,18 +77,14 @@ export default function LandingDashboardPage() {
   const [chatInput, setChatInput] = useState('');
   const [isKadriOsTyping, setIsKadriOsTyping] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  
-  // FIX: Create a ref for the chat input element
   const chatInputRef = useRef<HTMLInputElement>(null);
 
-  // This useEffect for scrolling is fine
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatMessages]);
 
-  // This useEffect for welcome messages is fine
   useEffect(() => {
     let i = 0;
     const interval = setInterval(() => {
@@ -117,18 +104,15 @@ export default function LandingDashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // FIX: Add a new useEffect to handle the auto-focus logic on the client-side
   useEffect(() => {
-    // This code now runs only on the client, after hydration
     if (chatInputRef.current && window.innerWidth > 768) {
       chatInputRef.current.focus();
     }
-  }, []); // The empty dependency array [] ensures this runs only once on mount
-
-  // No changes to handleChatSubmit
+  }, []);
+  
   const handleChatSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!chatInput.trim()) return;
+    if (!chatInput.trim() || isKadriOsTyping) return;
 
     const newUserMessage: ChatMessage = {
       id: Date.now(),
@@ -136,24 +120,58 @@ export default function LandingDashboardPage() {
       text: chatInput,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' })
     };
-    setChatMessages(prev => [...prev, newUserMessage]);
+    
+    const updatedMessages = [...chatMessages, newUserMessage];
+    setChatMessages(updatedMessages);
     setChatInput('');
     setIsKadriOsTyping(true);
     
-    setTimeout(() => {
+    const apiHistory = [
+      { role: 'assistant', content: KADRI_OS_PERSONA.welcomeMessage },
+      ...updatedMessages
+        .filter(msg => typeof msg.text === 'string')
+        .map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'assistant',
+            content: msg.text as string,
+        }))
+    ];
+    
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: apiHistory })
+      });
+
+      if (!response.ok) {
+        throw new Error('API response was not ok.');
+      }
+
+      const data = await response.json();
+      
       const systemResponse: ChatMessage = {
         id: Date.now() + 1,
         sender: 'system',
-        text: `Query received. Based on my profile, I specialize in Agentic AI and have published ${metrics.researchPapers} papers. How can I elaborate on my projects?`,
+        text: data.content || KADRI_OS_PERSONA.defaultResponse,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' })
       };
       setChatMessages(prev => [...prev, systemResponse]);
+
+    } catch (error) {
+      console.error("Failed to get response from AI:", error);
+      const errorResponse: ChatMessage = {
+        id: Date.now() + 1,
+        sender: 'system',
+        text: KADRI_OS_PERSONA.defaultResponse,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' })
+      };
+      setChatMessages(prev => [...prev, errorResponse]);
+    } finally {
       setIsKadriOsTyping(false);
-    }, 1500);
+    }
   };
 
   return (
-    // The rest of the JSX is the same, except for the one input element
     <TooltipProvider delayDuration={100}>
       <motion.div
         className="container mx-auto min-h-screen flex flex-col items-center justify-center px-4 py-8 md:py-12 overflow-x-hidden"
@@ -305,16 +323,15 @@ export default function LandingDashboardPage() {
                   <form onSubmit={handleChatSubmit} className="flex items-center w-full">
                     <span className="font-mono text-sm text-cyan-400 mr-2 flex-shrink-0">user@kadripathi:~$</span>
                     <input
-                      // FIX: Attach the ref and remove the autoFocus prop
                       ref={chatInputRef}
                       type="text"
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       className="flex-grow bg-transparent text-green-200 placeholder-green-600 focus:outline-none font-mono text-sm w-full"
                       placeholder="Ask about skills, projects..."
-                      // autoFocus is now handled in a useEffect hook
+                      disabled={isKadriOsTyping}
                     />
-                     <Button type="submit" size="sm" variant="ghost" className="ml-2 text-green-400 hover:bg-green-500/20 p-1">
+                     <Button type="submit" size="sm" variant="ghost" className="ml-2 text-green-400 hover:bg-green-500/20 p-1" disabled={!chatInput.trim() || isKadriOsTyping}>
                         <ArrowRight className="h-4 w-4"/>
                     </Button>
                   </form>
@@ -359,7 +376,7 @@ export default function LandingDashboardPage() {
               <Card className="bg-transparent border-none h-full flex flex-col">
                 <CardHeader>
                   <CardTitle className="flex items-center text-xl">
-                    <Code className="mr-2 h-6 w-6 text-primary" /> Tech Stack Distribution
+                    <Layers className="mr-2 h-6 w-6 text-primary" /> Tech Stack Distribution
                   </CardTitle>
                   <CardDescription>Breakdown of primary technologies used in projects</CardDescription>
                 </CardHeader>
@@ -394,20 +411,36 @@ export default function LandingDashboardPage() {
                   <CardTitle className="flex items-center text-xl">
                     <FileText className="mr-2 h-6 w-6 text-primary" /> Research Publications
                   </CardTitle>
-                  <CardDescription>Author of {publications.length} papers in AI, Aerospace, and Applied Physics</CardDescription>
+                  <CardDescription>Author of {metrics.researchPapers} papers in AI, Aerospace, and Applied Physics</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow space-y-4 text-sm pt-2">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
-                        {publications.map((pub, index) => (
-                            <div key={index} className="flex items-start gap-3">
-                                <Star className="h-4 w-4 text-primary/70 mt-1 flex-shrink-0" />
-                                <div>
-                                    <p className="font-semibold text-foreground/90 leading-snug">{pub.title}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">{pub.journal}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                  {/* --- STEP 3: UPDATE THE RENDERING LOGIC --- */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
+                      {publications.map((pub, index) => (
+                          <div key={index} className="flex items-start gap-3">
+                              <Star className="h-4 w-4 text-primary/70 mt-1 flex-shrink-0" />
+                              <div>
+                                  <p className="font-semibold text-foreground/90 leading-snug">{pub.title}</p>
+                                  <p className="text-xs text-muted-foreground/80 mt-1 italic">{pub.authors}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">{pub.journal}</p>
+                                  <div className="flex items-center gap-4 mt-2">
+                                      {pub.externalLink && (
+                                          <Link href={pub.externalLink} target="_blank" rel="noopener noreferrer" className="flex items-center text-xs text-primary/90 hover:text-primary hover:underline">
+                                              <ExternalLink className="mr-1.5 h-3 w-3" />
+                                              View Site
+                                          </Link>
+                                      )}
+                                      {pub.pdfLink && (
+                                          <Link href={pub.pdfLink} target="_blank" rel="noopener noreferrer" className="flex items-center text-xs text-primary/90 hover:text-primary hover:underline">
+                                              <FileDown className="mr-1.5 h-3 w-3" />
+                                              Download PDF
+                                          </Link>
+                                      )}
+                                  </div>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
