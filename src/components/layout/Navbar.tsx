@@ -14,7 +14,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Home, UserCog, Bot, Briefcase, Rocket } from "lucide-react";
-import AIChat from "@/components/chat/AIChat"; // Assuming you have this component
+import AIChat from "@/components/chat/AIChat";
 
 interface NavItem {
   title: string;
@@ -28,6 +28,39 @@ export default function Navbar() {
   const pathname = usePathname();
   const [hoveredItem, setHoveredItem] = React.useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = React.useState(false);
+  
+  // --- START: HIDE ON SCROLL LOGIC ---
+  const [isHeaderVisible, setHeaderVisible] = React.useState(true);
+  const [lastScrollY, setLastScrollY] = React.useState(0);
+
+  React.useEffect(() => {
+    const controlNavbar = () => {
+      // Don't run this logic if the chat modal is open
+      if (isChatOpen) {
+        setHeaderVisible(true);
+        return;
+      }
+
+      if (typeof window !== 'undefined') {
+        // If scrolling down and past the header height, hide it
+        if (window.scrollY > lastScrollY && window.scrollY > 100) { 
+          setHeaderVisible(false);
+        } else { // If scrolling up, show it
+          setHeaderVisible(true);
+        }
+        // Remember the new scroll position for the next move
+        setLastScrollY(window.scrollY);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', controlNavbar);
+      return () => {
+        window.removeEventListener('scroll', controlNavbar);
+      };
+    }
+  }, [lastScrollY, isChatOpen]);
+  // --- END: HIDE ON SCROLL LOGIC ---
 
   const mainNavItems: NavItem[] = [
     { title: "Home", href: "/", icon: Home, description: "Return to the main hub" },
@@ -43,13 +76,12 @@ export default function Navbar() {
 
   return (
     <>
-      {/* FIX 1: Removed `overflow-x-hidden` from header to prevent internal scrollbar on desktop */}
-      <header className="sticky top-0 z-40 w-full border-b border-border/20 bg-background/80 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/60">
-        <div className="absolute inset-0 opacity-5 pointer-events-none">
-          <div className="h-full w-full bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:24px_24px]" />
-        </div>
-        
-        {/* FIX 1: This new div acts as a clipping mask for the blobs, preventing page scroll without affecting the header layout. */}
+      {/* --- WRAP HEADER IN MOTION.HEADER FOR ANIMATION --- */}
+      <motion.header 
+        animate={{ y: isHeaderVisible ? 0 : "-100%" }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="sticky top-0 z-40 w-full border-b border-border/20 bg-background/80 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/60"
+      >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute inset-0 opacity-10 pointer-events-none mix-blend-soft-light">
                 <div className="absolute -left-20 -top-20 w-64 h-64 bg-primary rounded-full filter blur-3xl animate-[pulse_8s_ease-in-out_infinite]" />
@@ -57,11 +89,9 @@ export default function Navbar() {
             </div>
         </div>
         
-        {/* FIX 2: Added `justify-center md:justify-start` to center logo on mobile and keep it left on desktop */}
         <div className="container flex h-20 max-w-screen-2xl items-center justify-center md:justify-start relative px-4 sm:px-6">
           <Link
             href="/"
-            // FIX 2: Changed margin to only apply on desktop to not affect mobile centering
             className="md:mr-6 flex items-center space-x-2 group relative z-10"
             onMouseEnter={() => setHoveredItem("logo")}
             onMouseLeave={() => setHoveredItem(null)}
@@ -116,9 +146,9 @@ export default function Navbar() {
             </NavigationMenuList>
           </NavigationMenu>
         </div>
-      </header>
+      </motion.header>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation (This will stay visible) */}
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: 0 }}

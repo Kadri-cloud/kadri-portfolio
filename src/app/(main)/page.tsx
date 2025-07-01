@@ -14,7 +14,6 @@ import { Progress } from '@/components/ui/progress';
 import { useTheme } from 'next-themes';
 import { ResponsivePie } from '@nivo/pie';
 import { KADRI_OS_PERSONA } from '@/lib/persona';
-// --- STEP 1: IMPORT DATA FROM THE CENTRALIZED FILE ---
 import { publications } from '@/lib/data';
 
 const containerVariants: Variants = {
@@ -43,8 +42,6 @@ const techStackData = [
   { "id": "Full-Stack (JS/TS)", "label": "JS/TS Stack", "value": 15, "color": "hsl(53, 70%, 50%)" },
   { "id": "Cloud & DevOps", "label": "Cloud/DevOps", "value": 10, "color": "hsl(344, 70%, 50%)" }
 ];
-// --- STEP 2: REMOVE THE OLD LOCAL PUBLICATIONS ARRAY ---
-// The publications data is now imported from `lib/data.ts`.
 
 interface ChatMessage {
   id: number;
@@ -55,11 +52,47 @@ interface ChatMessage {
 
 export default function LandingDashboardPage() {
   const { theme } = useTheme();
+  const [isMobile, setIsMobile] = useState(false);
+  // --- START FIX 1: State to control the "auto-hover" animation ---
+  const [activeSliceId, setActiveSliceId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // --- START FIX 2: Effect for the auto-pilot animation ---
+  useEffect(() => {
+    const animationTimeout = setTimeout(() => {
+      let currentIndex = 0;
+      const interval = setInterval(() => {
+        if (currentIndex < techStackData.length) {
+          // Set the active slice
+          setActiveSliceId(techStackData[currentIndex].id);
+          currentIndex++;
+        } else {
+          // End of cycle, clear the interval and reset the active slice
+          clearInterval(interval);
+          setTimeout(() => setActiveSliceId(null), 1500); 
+        }
+      }, 1500); // Each slice is "active" for 1.5 seconds
+
+      // Cleanup function to clear interval if component unmounts
+      return () => clearInterval(interval);
+    }, 1000); // Start the animation 1 second after the component mounts
+
+    // Cleanup function to clear the initial timeout
+    return () => clearTimeout(animationTimeout);
+  }, []); // The empty array ensures this effect runs only once
 
   const metrics = {
     operationalEfficiencyBoost: 60,
     errorReduction: 80,
-    researchPapers: publications.length, // Now dynamically counts the papers
+    researchPapers: publications.length,
     keyAchievements: 5,
     projectsDeployed: 12,
     aiAgentsCreated: 8,
@@ -143,28 +176,16 @@ export default function LandingDashboardPage() {
         body: JSON.stringify({ messages: apiHistory })
       });
 
-      if (!response.ok) {
-        throw new Error('API response was not ok.');
-      }
+      if (!response.ok) { throw new Error('API response was not ok.'); }
 
       const data = await response.json();
       
-      const systemResponse: ChatMessage = {
-        id: Date.now() + 1,
-        sender: 'system',
-        text: data.content || KADRI_OS_PERSONA.defaultResponse,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' })
-      };
+      const systemResponse: ChatMessage = { id: Date.now() + 1, sender: 'system', text: data.content || KADRI_OS_PERSONA.defaultResponse, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' }) };
       setChatMessages(prev => [...prev, systemResponse]);
 
     } catch (error) {
       console.error("Failed to get response from AI:", error);
-      const errorResponse: ChatMessage = {
-        id: Date.now() + 1,
-        sender: 'system',
-        text: KADRI_OS_PERSONA.defaultResponse,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' })
-      };
+      const errorResponse: ChatMessage = { id: Date.now() + 1, sender: 'system', text: KADRI_OS_PERSONA.defaultResponse, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' }) };
       setChatMessages(prev => [...prev, errorResponse]);
     } finally {
       setIsKadriOsTyping(false);
@@ -173,228 +194,107 @@ export default function LandingDashboardPage() {
 
   return (
     <TooltipProvider delayDuration={100}>
-      <motion.div
-        className="container mx-auto min-h-screen flex flex-col items-center justify-center px-4 py-8 md:py-12 overflow-x-hidden"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
+      <motion.div className="container mx-auto min-h-screen flex flex-col items-center justify-center px-4 py-8 md:py-12 overflow-x-hidden" variants={containerVariants} initial="hidden" animate="visible">
         <div className="absolute inset-0 opacity-5 pointer-events-none">
           <div className="h-full w-full bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
         </div>
-        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 w-full max-w-7xl">
-          
-          <motion.div
-            className="md:col-span-1 lg:col-span-3 h-full"
-            variants={itemVariants}
-          >
-            <motion.div
-              variants={cardHoverVariants}
-              className={`relative overflow-hidden h-full ${futuristicGlow} backdrop-blur-sm bg-card/80 border border-primary/20 rounded-xl`}
-            >
+          <motion.div className="md:col-span-1 lg:col-span-3 h-full" variants={itemVariants}>
+            <motion.div variants={cardHoverVariants} className={`relative overflow-hidden h-full ${futuristicGlow} backdrop-blur-sm bg-card/80 border border-primary/20 rounded-xl`}>
               <Card className="bg-transparent border-none h-full flex flex-col">
                 <CardHeader className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-6">
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.3 }}
-                  >
+                  <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.3 }}>
                     <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-2 border-primary/50">
-                      <AvatarImage src="/images/profile.jpg" alt="Kadripathi KN" />
-                      <AvatarFallback>KKN</AvatarFallback>
+                      <AvatarImage src="/images/profile.jpg" alt="Kadripathi KN" /><AvatarFallback>KKN</AvatarFallback>
                     </Avatar>
                   </motion.div>
                   <div className="text-center sm:text-left">
-                    <CardTitle className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-300">
-                      KADRIPATHI KN
-                    </CardTitle>
+                    <CardTitle className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-300">KADRIPATHI KN</CardTitle>
                     <div className="h-8 mt-1">
-                      <TypeAnimation
-                        sequence={[
-                          'Agentic AI Engineer', 1500,
-                          'LLM & NLP Specialist', 1500,
-                          'Full-Stack AI Developer', 1500,
-                          'Aerospace Innovator', 1500,
-                        ]}
-                        wrapper="p"
-                        cursor={true}
-                        repeat={Infinity}
-                        className="text-lg sm:text-xl text-muted-foreground"
-                      />
+                      <TypeAnimation sequence={['Agentic AI Engineer', 1500, 'LLM & NLP Specialist', 1500, 'Full-Stack AI Developer', 1500, 'Aerospace Innovator', 1500,]} wrapper="p" cursor={true} repeat={Infinity} className="text-lg sm:text-xl text-muted-foreground" />
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="p-6 pt-0 sm:pt-2 flex-grow">
-                  <p className="text-sm sm:text-base text-foreground/80 leading-relaxed mb-6">
-                    AI/ML Engineer specializing in designing and deploying autonomous agentic AI systems for complex industrial applications. Proven success in translating business challenges into measurable outcomes, delivering a multi-agent framework that boosted operational efficiency by {metrics.operationalEfficiencyBoost}% and reduced errors by {metrics.errorReduction}%.
-                  </p>
+                  <p className="text-sm sm:text-base text-foreground/80 leading-relaxed mb-6">AI/ML Engineer specializing in designing and deploying autonomous agentic AI systems for complex industrial applications. Proven success in translating business challenges into measurable outcomes, delivering a multi-agent framework that boosted operational efficiency by {metrics.operationalEfficiencyBoost}% and reduced errors by {metrics.errorReduction}%.</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-                    <div className="border rounded-lg p-2 text-center border-primary/20">
-                        <div className="text-xl sm:text-2xl font-bold text-primary">{`${metrics.operationalEfficiencyBoost}%+`}</div>
-                        <div className="text-xs text-muted-foreground">Efficiency Boost</div>
-                    </div>
-                     <div className="border rounded-lg p-2 text-center border-primary/20">
-                        <div className="text-xl sm:text-2xl font-bold text-primary">{`${metrics.errorReduction}%`}</div>
-                        <div className="text-xs text-muted-foreground">Error Reduction</div>
-                    </div>
-                    <div className="border rounded-lg p-2 text-center border-primary/20">
-                        <div className="text-xl sm:text-2xl font-bold text-primary">{metrics.researchPapers}</div>
-                        <div className="text-xs text-muted-foreground">Publications</div>
-                    </div>
-                     <div className="border rounded-lg p-2 text-center border-primary/20">
-                        <div className="text-xl sm:text-2xl font-bold text-primary">{`${metrics.keyAchievements}+`}</div>
-                        <div className="text-xs text-muted-foreground">Key Achievements</div>
-                    </div>
-                     <div className="border rounded-lg p-2 text-center border-primary/20">
-                        <div className="text-xl sm:text-2xl font-bold text-primary">{`${metrics.projectsDeployed}+`}</div>
-                        <div className="text-xs text-muted-foreground">Deployed Projects</div>
-                    </div>
-                     <div className="border rounded-lg p-2 text-center border-primary/20">
-                        <div className="text-xl sm:text-2xl font-bold text-primary">{`${metrics.aiAgentsCreated}+`}</div>
-                        <div className="text-xs text-muted-foreground">AI Agents Built</div>
-                    </div>
+                    <div className="border rounded-lg p-2 text-center border-primary/20"><div className="text-xl sm:text-2xl font-bold text-primary">{`${metrics.operationalEfficiencyBoost}%+`}</div><div className="text-xs text-muted-foreground">Efficiency Boost</div></div>
+                    <div className="border rounded-lg p-2 text-center border-primary/20"><div className="text-xl sm:text-2xl font-bold text-primary">{`${metrics.errorReduction}%`}</div><div className="text-xs text-muted-foreground">Error Reduction</div></div>
+                    <div className="border rounded-lg p-2 text-center border-primary/20"><div className="text-xl sm:text-2xl font-bold text-primary">{metrics.researchPapers}</div><div className="text-xs text-muted-foreground">Publications</div></div>
+                    <div className="border rounded-lg p-2 text-center border-primary/20"><div className="text-xl sm:text-2xl font-bold text-primary">{`${metrics.keyAchievements}+`}</div><div className="text-xs text-muted-foreground">Key Achievements</div></div>
+                    <div className="border rounded-lg p-2 text-center border-primary/20"><div className="text-xl sm:text-2xl font-bold text-primary">{`${metrics.projectsDeployed}+`}</div><div className="text-xs text-muted-foreground">Deployed Projects</div></div>
+                    <div className="border rounded-lg p-2 text-center border-primary/20"><div className="text-xl sm:text-2xl font-bold text-primary">{`${metrics.aiAgentsCreated}+`}</div><div className="text-xs text-muted-foreground">AI Agents Built</div></div>
                   </div>
                   <div className="flex flex-wrap gap-3 justify-center sm:justify-start mt-auto pt-4">
-                    <Link href="/expertise">
-                      <Button variant="default" size="lg" className="group">
-                        Explore Expertise <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                    <Link href="/kadri-ai-ml-cv.pdf" target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="lg" className="border-primary/50">
-                        <Download className="mr-2 h-5 w-5" /> Download CV
-                      </Button>
-                    </Link>
+                    <Link href="/expertise"><Button variant="default" size="lg" className="group">Explore Expertise <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" /></Button></Link>
+                    <Link href="/kadri-ai-ml-cv.pdf" target="_blank" rel="noopener noreferrer"><Button variant="outline" size="lg" className="border-primary/50"><Download className="mr-2 h-5 w-5" /> Download CV</Button></Link>
                   </div>
                 </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            className="md:col-span-1 lg:col-span-2 h-full"
-            variants={itemVariants}
-          >
-            <motion.div
-              className={`h-full flex flex-col ${aiGlow} backdrop-blur-sm bg-black/85 border border-purple-500/40 rounded-xl overflow-hidden`}
-            >
-              <Card className="bg-transparent border-none h-full flex flex-col">
-                <CardHeader className="p-3 border-b border-purple-500/30 flex-shrink-0">
-                  <CardTitle className="flex items-center text-sm font-mono text-purple-300">
-                    <TerminalSquare className="mr-2 h-5 w-5" />
-                    KadriOS :: Interactive Mode
-                  </CardTitle>
-                </CardHeader>
-                <CardContent 
-                  ref={chatContainerRef} 
-                  className="p-3 flex-grow font-mono text-xs text-green-300 space-y-2 overflow-y-auto max-h-[350px] sm:max-h-[450px] scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-transparent"
-                >
-                  {chatMessages.map((msg) => (
-                    <div key={msg.id}>
-                      {msg.sender === 'user' ? (
-                        <div className="flex items-start">
-                          <span className="text-cyan-400 mr-1 flex-shrink-0">user@kadripathi:~$</span>
-                          <p className="whitespace-pre-wrap break-words flex-grow">{msg.text}</p>
-                        </div>
-                      ) : (
-                         <div className="flex items-start">
-                           <span className="text-purple-400 mr-1 flex-shrink-0">KadriOS></span>
-                           <div className="whitespace-pre-wrap break-words flex-grow">{msg.text}</div>
-                         </div>
-                      )}
-                      {msg.timestamp && <span className="text-gray-500 text-[10px] ml-auto block text-right pr-1">{msg.timestamp}</span>}
-                    </div>
-                  ))}
-                  {isKadriOsTyping && (
-                    <div className="flex items-start">
-                      <span className="text-purple-400 mr-1">KadriOS></span>
-                      <p className="text-gray-400 animate-pulse">KadriOS is typing<span className="animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite_0.1s]">.</span><span className="animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite_0.2s]">.</span><span className="animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite_0.3s]">.</span></p>
-                    </div>
-                  )}
-                   {!isKadriOsTyping && chatMessages.length > 0 && chatMessages[chatMessages.length -1]?.sender === 'system' && (
-                     <div className="flex items-start">
-                        <span className="text-purple-400 mr-1">KadriOS></span>
-                        <span className="animate-[caret-blink_1s_ease-out_infinite] text-green-300">▋</span>
-                    </div>
-                   )}
-                </CardContent>
-                <div className="p-2 border-t border-purple-500/30 flex-shrink-0">
-                  <form onSubmit={handleChatSubmit} className="flex items-center w-full">
-                    <span className="font-mono text-sm text-cyan-400 mr-2 flex-shrink-0">user@kadripathi:~$</span>
-                    <input
-                      ref={chatInputRef}
-                      type="text"
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      className="flex-grow bg-transparent text-green-200 placeholder-green-600 focus:outline-none font-mono text-sm w-full"
-                      placeholder="Ask about skills, projects..."
-                      disabled={isKadriOsTyping}
-                    />
-                     <Button type="submit" size="sm" variant="ghost" className="ml-2 text-green-400 hover:bg-green-500/20 p-1" disabled={!chatInput.trim() || isKadriOsTyping}>
-                        <ArrowRight className="h-4 w-4"/>
-                    </Button>
-                  </form>
-                </div>
               </Card>
             </motion.div>
           </motion.div>
 
           <motion.div className="md:col-span-1 lg:col-span-2 h-full" variants={itemVariants}>
-            <motion.div
-              variants={cardHoverVariants}
-              className={`h-full flex flex-col ${aiGlow} backdrop-blur-sm bg-card/80 border border-purple-500/20 rounded-xl`}
-            >
+            <motion.div className={`h-full flex flex-col ${aiGlow} backdrop-blur-sm bg-black/85 border border-purple-500/40 rounded-xl overflow-hidden`}>
               <Card className="bg-transparent border-none h-full flex flex-col">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-xl">
-                    <BrainCircuit className="mr-2 h-6 w-6 text-purple-400" /> Core Skills
-                  </CardTitle>
-                  <CardDescription>Technical proficiency levels</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-grow space-y-4 text-sm">
-                  {coreSkills.map((skill, index) => (
-                    <div key={index}>
-                      <div className="flex items-center gap-2 mb-1">
-                        {React.cloneElement(skill.icon, {className: "h-4 w-4 text-purple-400"})}
-                        <span className="text-muted-foreground">{skill.name}</span>
-                        <span className="ml-auto font-mono text-xs text-purple-400">{skill.level}%</span>
-                      </div>
-                      <Progress value={skill.level} indicatorColor="bg-purple-400" className="h-2" />
-                    </div>
-                  ))}
+                <CardHeader className="p-3 border-b border-purple-500/30 flex-shrink-0"><CardTitle className="flex items-center text-sm font-mono text-purple-300"><TerminalSquare className="mr-2 h-5 w-5" />KadriOS :: Interactive Mode</CardTitle></CardHeader>
+                <CardContent ref={chatContainerRef} className="p-3 flex-grow font-mono text-xs text-green-300 space-y-2 overflow-y-auto max-h-[350px] sm:max-h-[450px] scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-transparent">
+                  {chatMessages.map((msg) => (<div key={msg.id}>{msg.sender === 'user' ? (<div className="flex items-start"><span className="text-cyan-400 mr-1 flex-shrink-0">user@kadripathi:~$</span><p className="whitespace-pre-wrap break-words flex-grow">{msg.text}</p></div>) : (<div className="flex items-start"><span className="text-purple-400 mr-1 flex-shrink-0">KadriOS></span><div className="whitespace-pre-wrap break-words flex-grow">{msg.text}</div></div>)}{msg.timestamp && <span className="text-gray-500 text-[10px] ml-auto block text-right pr-1">{msg.timestamp}</span>}</div>))}
+                  {isKadriOsTyping && (<div className="flex items-start"><span className="text-purple-400 mr-1">KadriOS></span><p className="text-gray-400 animate-pulse">KadriOS is typing<span className="animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite_0.1s]">.</span><span className="animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite_0.2s]">.</span><span className="animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite_0.3s]">.</span></p></div>)}
+                  {!isKadriOsTyping && chatMessages.length > 0 && chatMessages[chatMessages.length -1]?.sender === 'system' && (<div className="flex items-start"><span className="text-purple-400 mr-1">KadriOS></span><span className="animate-[caret-blink_1s_ease-out_infinite] text-green-300">▋</span></div>)}
                 </CardContent>
+                <div className="p-2 border-t border-purple-500/30 flex-shrink-0"><form onSubmit={handleChatSubmit} className="flex items-center w-full"><span className="font-mono text-sm text-cyan-400 mr-2 flex-shrink-0">user@kadripathi:~$</span><input ref={chatInputRef} type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} className="flex-grow bg-transparent text-green-200 placeholder-green-600 focus:outline-none font-mono text-sm w-full" placeholder="Ask about skills, projects..." disabled={isKadriOsTyping} /><Button type="submit" size="sm" variant="ghost" className="ml-2 text-green-400 hover:bg-green-500/20 p-1" disabled={!chatInput.trim() || isKadriOsTyping}><ArrowRight className="h-4 w-4"/></Button></form></div>
+              </Card>
+            </motion.div>
+          </motion.div>
+
+          <motion.div className="md:col-span-1 lg:col-span-2 h-full" variants={itemVariants}>
+            <motion.div variants={cardHoverVariants} className={`h-full flex flex-col ${aiGlow} backdrop-blur-sm bg-card/80 border border-purple-500/20 rounded-xl`}>
+              <Card className="bg-transparent border-none h-full flex flex-col">
+                <CardHeader><CardTitle className="flex items-center text-xl"><BrainCircuit className="mr-2 h-6 w-6 text-purple-400" /> Core Skills</CardTitle><CardDescription>Technical proficiency levels</CardDescription></CardHeader>
+                <CardContent className="flex-grow space-y-4 text-sm">{coreSkills.map((skill, index) => (<div key={index}><div className="flex items-center gap-2 mb-1">{React.cloneElement(skill.icon, {className: "h-4 w-4 text-purple-400"})}<span className="text-muted-foreground">{skill.name}</span><span className="ml-auto font-mono text-xs text-purple-400">{skill.level}%</span></div><Progress value={skill.level} indicatorColor="bg-purple-400" className="h-2" /></div>))}</CardContent>
               </Card>
             </motion.div>
           </motion.div>
 
           <motion.div className="md:col-span-1 lg:col-span-3 h-full" variants={itemVariants}>
-            <motion.div
-              variants={cardHoverVariants}
-              className={`h-full flex flex-col ${futuristicGlow} backdrop-blur-sm bg-card/80 border border-primary/20 rounded-xl`}
-            >
+            <motion.div variants={cardHoverVariants} className={`h-full flex flex-col ${futuristicGlow} backdrop-blur-sm bg-card/80 border border-primary/20 rounded-xl`}>
               <Card className="bg-transparent border-none h-full flex flex-col">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-xl">
-                    <Layers className="mr-2 h-6 w-6 text-primary" /> Tech Stack Distribution
-                  </CardTitle>
-                  <CardDescription>Breakdown of primary technologies used in projects</CardDescription>
-                </CardHeader>
+                <CardHeader><CardTitle className="flex items-center text-xl"><Layers className="mr-2 h-6 w-6 text-primary" /> Tech Stack Distribution</CardTitle><CardDescription>Breakdown of primary technologies used in projects</CardDescription></CardHeader>
                 <CardContent className="flex-grow h-64 sm:h-72">
                   <ResponsivePie
                     data={techStackData}
-                    margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                    margin={isMobile ? { top: 10, right: 10, bottom: 130, left: 10 } : { top: 30, right: 80, bottom: 30, left: 80 }}
                     innerRadius={0.5} padAngle={0.7} cornerRadius={3} activeOuterRadiusOffset={8}
+                    // --- START FIX 3: Connect animation state to the chart ---
+                    activeId={activeSliceId}
+                    onActiveIdChange={setActiveSliceId} // Allows user hover to take over
                     colors={{ scheme: theme === 'dark' ? 'nivo' : 'set3' }}
-                    borderWidth={1} borderColor={{ from: 'color', modifiers: [ [ 'darker', 0.2 ] ] }}
-                    arcLinkLabelsSkipAngle={10} arcLinkLabelsTextColor={theme === 'dark' ? '#ccc' : '#333'}
+                    borderWidth={1} borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
+                    enableArcLinkLabels={!isMobile} arcLinkLabelsSkipAngle={10} arcLinkLabelsTextColor={theme === 'dark' ? '#ccc' : '#333'}
                     arcLinkLabelsThickness={2} arcLinkLabelsColor={{ from: 'color' }}
-                    arcLabelsSkipAngle={10} arcLabelsTextColor={{ from: 'color', modifiers: [ [ 'darker', theme === 'dark' ? 3 : 2 ] ] }}
+                    arcLabelsSkipAngle={10} arcLabelsTextColor={{ from: 'color', modifiers: [['darker', theme === 'dark' ? 3 : 2]] }}
                     motionConfig="gentle"
-                    theme={{
-                      labels: { text: { fill: theme === 'dark' ? '#ffffff' : '#000000', fontSize: '10px' } },
-                      tooltip: { container: { background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#000' } },
-                    }}
+                    theme={{ labels: { text: { fill: theme === 'dark' ? '#ffffff' : '#000000', fontSize: '12px' } }, tooltip: { container: { background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#000' } }, legends: { text: { fontSize: 12, fill: theme === 'dark' ? '#ccc' : '#333' } } }}
+                    // --- START FIX 4: Improved mobile legend ---
+                    legends={isMobile ? [
+                        {
+                            anchor: 'bottom',
+                            direction: 'column', // Changed from 'row' to 'column'
+                            justify: false,
+                            translateX: 0,
+                            translateY: 110, // Increased Y offset for spacing
+                            itemsSpacing: 2, // Spacing between legend items
+                            itemWidth: 150, // Give more width to each item
+                            itemHeight: 20,
+                            itemTextColor: '#999',
+                            itemDirection: 'left-to-right',
+                            itemOpacity: 1,
+                            symbolSize: 12,
+                            symbolShape: 'circle',
+                            effects: [{ on: 'hover', style: { itemTextColor: theme === 'dark' ? '#fff' : '#000' } }]
+                        }
+                    ] : []}
                   />
                 </CardContent>
               </Card>
@@ -402,50 +302,17 @@ export default function LandingDashboardPage() {
           </motion.div>
           
           <motion.div className="md:col-span-2 lg:col-span-5 h-full" variants={itemVariants}>
-            <motion.div
-              variants={cardHoverVariants}
-              className={`h-full flex flex-col ${futuristicGlow} backdrop-blur-sm bg-card/80 border border-primary/20 rounded-xl`}
-            >
+            <motion.div variants={cardHoverVariants} className={`h-full flex flex-col ${futuristicGlow} backdrop-blur-sm bg-card/80 border border-primary/20 rounded-xl`}>
               <Card className="bg-transparent border-none h-full flex flex-col">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-xl">
-                    <FileText className="mr-2 h-6 w-6 text-primary" /> Research Publications
-                  </CardTitle>
-                  <CardDescription>Author of {metrics.researchPapers} papers in AI, Aerospace, and Applied Physics</CardDescription>
-                </CardHeader>
+                <CardHeader><CardTitle className="flex items-center text-xl"><FileText className="mr-2 h-6 w-6 text-primary" /> Research Publications</CardTitle><CardDescription>Author of {metrics.researchPapers} papers in AI, Aerospace, and Applied Physics</CardDescription></CardHeader>
                 <CardContent className="flex-grow space-y-4 text-sm pt-2">
-                  {/* --- STEP 3: UPDATE THE RENDERING LOGIC --- */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
-                      {publications.map((pub, index) => (
-                          <div key={index} className="flex items-start gap-3">
-                              <Star className="h-4 w-4 text-primary/70 mt-1 flex-shrink-0" />
-                              <div>
-                                  <p className="font-semibold text-foreground/90 leading-snug">{pub.title}</p>
-                                  <p className="text-xs text-muted-foreground/80 mt-1 italic">{pub.authors}</p>
-                                  <p className="text-xs text-muted-foreground mt-1">{pub.journal}</p>
-                                  <div className="flex items-center gap-4 mt-2">
-                                      {pub.externalLink && (
-                                          <Link href={pub.externalLink} target="_blank" rel="noopener noreferrer" className="flex items-center text-xs text-primary/90 hover:text-primary hover:underline">
-                                              <ExternalLink className="mr-1.5 h-3 w-3" />
-                                              View Site
-                                          </Link>
-                                      )}
-                                      {pub.pdfLink && (
-                                          <Link href={pub.pdfLink} target="_blank" rel="noopener noreferrer" className="flex items-center text-xs text-primary/90 hover:text-primary hover:underline">
-                                              <FileDown className="mr-1.5 h-3 w-3" />
-                                              Download PDF
-                                          </Link>
-                                      )}
-                                  </div>
-                              </div>
-                          </div>
-                      ))}
+                      {publications.map((pub, index) => (<div key={index} className="flex items-start gap-3"><Star className="h-4 w-4 text-primary/70 mt-1 flex-shrink-0" /><div><p className="font-semibold text-foreground/90 leading-snug">{pub.title}</p><p className="text-xs text-muted-foreground/80 mt-1 italic">{pub.authors}</p><p className="text-xs text-muted-foreground mt-1">{pub.journal}</p><div className="flex items-center gap-4 mt-2">{pub.externalLink && (<Link href={pub.externalLink} target="_blank" rel="noopener noreferrer" className="flex items-center text-xs text-primary/90 hover:text-primary hover:underline"><ExternalLink className="mr-1.5 h-3 w-3" />View Site</Link>)}{pub.pdfLink && (<Link href={pub.pdfLink} target="_blank" rel="noopener noreferrer" className="flex items-center text-xs text-primary/90 hover:text-primary hover:underline"><FileDown className="mr-1.5 h-3 w-3" />Download PDF</Link>)}</div></div></div>))}
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
           </motion.div>
-          
         </div>
       </motion.div>
     </TooltipProvider>
